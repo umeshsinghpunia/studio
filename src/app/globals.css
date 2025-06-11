@@ -12,89 +12,95 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
   :root {
-    --background: 195 17% 95%; /* Light Gray #F0F4F5 */
-    --foreground: 200 10% 25%; /* Darker gray for text */
+    --background: 210 20% 98%; /* Very light, slightly cool off-white */
+    --foreground: 210 10% 30%; /* Soft dark gray */
 
-    --card: 0 0% 100%;
-    --card-foreground: 200 10% 25%;
+    --card: 210 20% 99%; /* Almost white, slight cool tint */
+    --card-foreground: 210 10% 30%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 10% 25%;
+    --popover: 210 20% 99%; /* Almost white, slight cool tint */
+    --popover-foreground: 210 10% 30%;
 
-    --primary: 182 31% 59%; /* Muted Teal #73B9BC */
-    --primary-foreground: 182 25% 98%;
+    --primary: 200 60% 65%; /* Soft Sky Blue */
+    --primary-foreground: 200 20% 98%; /* Very light for text on primary */
 
-    --secondary: 182 20% 75%; /* Lighter Teal */
-    --secondary-foreground: 182 30% 20%;
+    --secondary: 200 50% 85%; /* Lighter Sky Blue */
+    --secondary-foreground: 200 30% 30%; /* Darker text for secondary */
 
-    --muted: 195 15% 88%; /* Slightly darker gray than background */
-    --muted-foreground: 200 10% 45%;
+    --muted: 210 20% 94%; /* Light gray */
+    --muted-foreground: 210 10% 50%; /* Medium gray */
 
-    --accent: 15 56% 66%; /* Soft Coral #D98E73 */
-    --accent-foreground: 15 50% 98%;
+    --accent: 30 80% 75%; /* Soft Peach */
+    --accent-foreground: 30 50% 30%; /* Darker text for accent */
 
     --destructive: 0 72% 51%; /* Default red */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 195 10% 85%;
-    --input: 195 10% 90%;
-    --ring: 182 31% 59%; /* Muted Teal for focus rings */
+    --border: 210 20% 90%; /* Softer border */
+    --input: 210 20% 96%; /* Very light input background */
+    --ring: 200 60% 65%; /* Soft Sky Blue for focus rings */
 
     --radius: 0.5rem;
 
-    --chart-1: 182 31% 59%; /* Teal */
-    --chart-2: 15 56% 66%; /* Coral */
-    --chart-3: 210 40% 56%; /* A muted blue */
-    --chart-4: 43 74% 66%; /* A soft yellow/orange */
-    --chart-5: 27 87% 67%; /* Another warm tone */
+    --chart-1: 200 60% 65%; /* Soft Sky Blue */
+    --chart-2: 30 80% 75%;  /* Soft Peach */
+    --chart-3: 150 50% 70%; /* Soft Mint Green */
+    --chart-4: 270 50% 80%; /* Soft Lavender */
+    --chart-5: 50 60% 75%;  /* Soft Butter Yellow */
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 200 10% 25%;
-    --sidebar-primary: 182 31% 59%;
-    --sidebar-primary-foreground: 182 25% 98%;
-    --sidebar-accent: 195 17% 92%;
-    --sidebar-accent-foreground: 182 31% 59%;
-    --sidebar-border: 195 10% 85%;
-    --sidebar-ring: 182 31% 59%;
+    --sidebar-background: 210 20% 99%;
+    --sidebar-foreground: 210 10% 30%;
+    --sidebar-primary: 200 60% 65%;
+    --sidebar-primary-foreground: 200 20% 98%;
+    --sidebar-accent: 210 20% 95%;
+    --sidebar-accent-foreground: 200 60% 65%;
+    --sidebar-border: 210 20% 90%;
+    --sidebar-ring: 200 60% 65%;
   }
 
   .dark {
-    --background: 200 10% 10%;
-    --foreground: 195 10% 90%;
+    --background: 210 15% 12%; /* Very dark, slightly cool desaturated blue */
+    --foreground: 210 15% 85%; /* Light gray, soft white */
 
-    --card: 200 10% 15%;
-    --card-foreground: 195 10% 90%;
+    --card: 210 15% 18%; /* Darker gray-blue */
+    --card-foreground: 210 15% 85%;
 
-    --popover: 200 10% 12%;
-    --popover-foreground: 195 10% 90%;
+    --popover: 210 15% 15%; /* Slightly darker than card for popovers */
+    --popover-foreground: 210 15% 85%;
 
-    --primary: 182 31% 59%;
-    --primary-foreground: 182 25% 10%;
+    --primary: 200 50% 55%; /* Muted Sky Blue */
+    --primary-foreground: 200 15% 10%; /* Very dark for text on primary */
 
-    --secondary: 182 20% 30%;
-    --secondary-foreground: 182 25% 90%;
+    --secondary: 200 40% 35%; /* Darker Muted Blue */
+    --secondary-foreground: 200 15% 80%; /* Lighter text for secondary */
 
-    --muted: 200 10% 20%;
-    --muted-foreground: 195 10% 60%;
+    --muted: 210 15% 22%; /* Dark gray */
+    --muted-foreground: 210 15% 60%; /* Medium-light gray */
 
-    --accent: 15 56% 66%;
-    --accent-foreground: 15 50% 10%;
+    --accent: 30 70% 60%; /* Muted Peach */
+    --accent-foreground: 30 30% 15%; /* Very dark text for accent */
 
     --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 200 10% 25%;
-    --input: 200 10% 22%;
-    --ring: 182 31% 59%;
+    --border: 210 15% 25%; /* Softer border for dark mode */
+    --input: 210 15% 20%; /* Dark input background */
+    --ring: 200 50% 55%; /* Muted Sky Blue for focus rings */
     
-    --sidebar-background: 200 10% 12%;
-    --sidebar-foreground: 195 10% 90%;
-    --sidebar-primary: 182 31% 59%;
-    --sidebar-primary-foreground: 182 25% 10%;
-    --sidebar-accent: 200 10% 20%;
-    --sidebar-accent-foreground: 182 31% 59%;
-    --sidebar-border: 200 10% 25%;
-    --sidebar-ring: 182 31% 59%;
+    --chart-1: 200 50% 55%; /* Muted Sky Blue Dark */
+    --chart-2: 30 70% 60%;  /* Muted Peach Dark */
+    --chart-3: 150 40% 55%; /* Muted Mint Green Dark */
+    --chart-4: 270 40% 65%; /* Muted Lavender Dark */
+    --chart-5: 50 50% 60%;  /* Muted Butter Yellow Dark */
+
+    --sidebar-background: 210 15% 15%;
+    --sidebar-foreground: 210 15% 85%;
+    --sidebar-primary: 200 50% 55%;
+    --sidebar-primary-foreground: 200 15% 10%;
+    --sidebar-accent: 210 15% 22%;
+    --sidebar-accent-foreground: 200 50% 55%;
+    --sidebar-border: 210 15% 25%;
+    --sidebar-ring: 200 50% 55%;
   }
 }
 
