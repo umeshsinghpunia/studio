@@ -1,11 +1,20 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Receipt } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Receipt, PlusCircle } from 'lucide-react';
 
 export default function BillsPage() {
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <h1 className="text-2xl font-headline font-semibold md:text-3xl">Track Bills</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-headline font-semibold md:text-3xl">Track Bills</h1>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Link href="/bills/add">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Bill
+          </Link>
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -21,7 +30,7 @@ export default function BillsPage() {
               Bill tracking feature is under development.
             </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              Soon, you'll be able to manage all your bills, set payment reminders, mark bills as paid, and see an overview of your bill payments.
+              Soon, you'll be able to manage all your bills, set payment reminders, mark bills as paid, and see an overview of your bill payments. Click "Add Bill" to start recording.
             </p>
           </div>
         </CardContent>
