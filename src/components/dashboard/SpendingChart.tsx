@@ -6,7 +6,6 @@ import type { Transaction } from '@/types';
 import { useTheme } from 'next-themes';
 import { useMemo, useState, useEffect } from 'react';
 import { CardDescription } from '../ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from '@/contexts/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
@@ -14,12 +13,14 @@ import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
 import { appConfig } from '@/config/app';
 import { getCountryByCode } from '@/lib/countries';
+import { formatCurrency } from '@/lib/utils';
 
 interface SpendingChartProps {
   transactions: Transaction[];
+  chartType: 'bar' | 'pie'; // To select which chart section to render primarily
 }
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', '#ff7f50', '#4682b4', '#dda0dd'];
+const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(20, 80%, 60%)', 'hsl(160, 70%, 50%)'];
 
 
 const renderActiveShape = (props: any, currencySymbol: string) => {
@@ -27,17 +28,17 @@ const renderActiveShape = (props: any, currencySymbol: string) => {
   const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
   const sin = Math.sin(-RADIAN * midAngle);
   const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+  const sx = cx + (outerRadius + 6) * cos;
+  const sy = cy + (outerRadius + 6) * sin;
+  const mx = cx + (outerRadius + 18) * cos;
+  const my = cy + (outerRadius + 18) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 18;
   const ey = my;
   const textAnchor = cos >= 0 ? 'start' : 'end';
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="font-headline text-sm">
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="font-headline text-xs">
         {payload.name}
       </text>
       <Sector
@@ -48,34 +49,36 @@ const renderActiveShape = (props: any, currencySymbol: string) => {
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
+        cornerRadius={5}
       />
       <Sector
         cx={cx}
         cy={cy}
         startAngle={startAngle}
         endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
+        innerRadius={outerRadius + 4}
+        outerRadius={outerRadius + 8}
         fill={fill}
+        cornerRadius={3}
       />
       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">{`${currencySymbol}${value.toFixed(2)}`}</text>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" className="text-xs">
-        {`(${(percent * 100).toFixed(2)}%)`}
+      <text x={ex + (cos >= 0 ? 1 : -1) * 10} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-2xs">{`${currencySymbol}${value.toFixed(2)}`}</text>
+      <text x={ex + (cos >= 0 ? 1 : -1) * 10} y={ey} dy={14} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" className="text-2xs">
+        {`(${(percent * 100).toFixed(1)}%)`}
       </text>
     </g>
   );
 };
 
 
-export default function SpendingChart({ transactions }: SpendingChartProps) {
+export default function SpendingChart({ transactions, chartType }: SpendingChartProps) {
   const { theme } = useTheme();
   const { user: firebaseUser } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
   const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
   const [trendChartType, setTrendChartType] = useState<'bar' | 'line' | 'area'>('bar');
-  const [categoryChartType, setCategoryChartType] = useState<'pie' | 'donut'>('pie');
+  // const [categoryChartType, setCategoryChartType] = useState<'pie' | 'donut'>('pie'); // Dribbble shows pie/donut, not selector
 
   useEffect(() => {
     if (firebaseUser) {
@@ -85,18 +88,8 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
         if (userDoc.exists()) {
           const userData = userDoc.data() as AppUser;
           if (userData.country) {
-            if (userData.country.currencySymbol) {
-              setCurrencySymbol(userData.country.currencySymbol);
-            } else if (userData.country.code) {
-              const countryFromList = getCountryByCode(userData.country.code);
-              if (countryFromList && countryFromList.currencySymbol) {
-                setCurrencySymbol(countryFromList.currencySymbol);
-              } else {
-                setCurrencySymbol(appConfig.defaultCurrencySymbol);
-              }
-            } else {
-              setCurrencySymbol(appConfig.defaultCurrencySymbol);
-            }
+            const countryDetails = getCountryByCode(userData.country.code);
+            setCurrencySymbol(countryDetails?.currencySymbol || appConfig.defaultCurrencySymbol);
           } else {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
@@ -129,7 +122,7 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
         return dateA.getTime() - dateB.getTime();
     });
     
-    const last12Months = sortedMonths.slice(-12); // Show up to 12 months for better trend visibility
+    const last12Months = sortedMonths.slice(-12);
     
     return last12Months.map(month => ({
       name: month.split(' ')[0], 
@@ -138,18 +131,19 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
   }, [transactions]);
 
   const categorySpendingData = useMemo(() => {
-    const expensesByCategory: { [key: string]: { name: string, value: number, icon?: string } } = {};
+    const expensesByCategory: { [key: string]: { name: string, value: number, icon?: string, fill: string } } = {};
     transactions
       .filter(t => t.type === 'expense')
-      .forEach(t => {
+      .forEach((t, index) => {
         const categoryName = t.category.name;
         expensesByCategory[categoryName] = {
           name: categoryName,
           value: (expensesByCategory[categoryName]?.value || 0) + t.amount,
-          icon: t.category.icon
+          icon: t.category.icon,
+          fill: PIE_CHART_COLORS[Object.keys(expensesByCategory).length % PIE_CHART_COLORS.length] // Assign color here
         };
       });
-    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value);
+    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value).slice(0, 6); // Show top 6 categories for clarity
   }, [transactions]);
 
   const totalCategorySpending = useMemo(() => {
@@ -165,14 +159,19 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
     return <CardDescription className="text-center py-8">No expense data to display chart.</CardDescription>;
   }
 
-  const commonChartProps = {
+  const barChartContainerProps = {
     width: "100%",
-    height: 350,
+    height: 280, // Adjusted height for Dribbble design
+  };
+  
+  const pieChartContainerProps = {
+      width: "100%",
+      height: 200, // Adjusted for Dribbble design with list
   };
 
   const commonCartesianProps = {
     data: monthlySpendingData,
-    margin: { top: 5, right: 20, left: -20, bottom: 5 }, // Adjusted left margin for YAxis
+    margin: { top: 5, right: 5, left: -25, bottom: 0 }, // Adjusted margins
   };
   
   const commonTooltipProps = {
@@ -180,81 +179,39 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
       backgroundColor: popoverBgColor,
       borderColor: popoverBorderColor,
       borderRadius: 'var(--radius)',
-      color: popoverTextColor
+      color: popoverTextColor,
+      padding: '8px 12px',
+      fontSize: '12px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
     },
-    labelStyle: { color: popoverTextColor },
+    labelStyle: { color: popoverTextColor, marginBottom: '4px', fontWeight: '500' },
     itemStyle: { color: popoverTextColor },
-    cursor: { fill: 'hsl(var(--accent))', fillOpacity: 0.1 },
+    cursor: { fill: 'hsl(var(--primary))', fillOpacity: 0.1 },
     formatter: (value: number) => [`${currencySymbol}${value.toFixed(2)}`, "Total"],
   };
 
+  if (chartType === 'bar') {
+    return (
+      <ResponsiveContainer {...barChartContainerProps}>
+        <BarChart {...commonCartesianProps} barGap={8} barCategoryGap="20%">
+          <CartesianGrid strokeDasharray="3 3" stroke={popoverBorderColor} vertical={false} />
+          <XAxis dataKey="name" stroke={tickColor} fontSize={10} tickLine={false} axisLine={{stroke: popoverBorderColor, strokeWidth: 0.5}} dy={5}/>
+          <YAxis stroke={tickColor} fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${currencySymbol}${value/1000}k`} />
+          <Tooltip {...commonTooltipProps} />
+          {/* <Legend wrapperStyle={{ fontSize: '12px', color: tickColor }} /> */}
+          <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
 
-  return (
-    <Tabs defaultValue="bar" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="bar">Monthly Trend</TabsTrigger>
-        <TabsTrigger value="pie">Category Breakdown</TabsTrigger>
-      </TabsList>
-      <TabsContent value="bar">
-        <div className="mb-4 w-full sm:w-1/3">
-            <Select value={trendChartType} onValueChange={(value) => setTrendChartType(value as 'bar' | 'line' | 'area')}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select chart type" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="bar">Bar Chart</SelectItem>
-                    <SelectItem value="line">Line Chart</SelectItem>
-                    <SelectItem value="area">Area Chart</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-        <ResponsiveContainer {...commonChartProps}>
-          {trendChartType === 'bar' && (
-            <BarChart {...commonCartesianProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke={popoverBorderColor} />
-              <XAxis dataKey="name" stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} />
-              <YAxis stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} tickFormatter={(value) => `${currencySymbol}${value}`} />
-              <Tooltip {...commonTooltipProps} />
-              <Legend wrapperStyle={{ fontSize: '12px', color: tickColor }} />
-              <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          )}
-          {trendChartType === 'line' && (
-            <LineChart {...commonCartesianProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke={popoverBorderColor} />
-              <XAxis dataKey="name" stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} />
-              <YAxis stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} tickFormatter={(value) => `${currencySymbol}${value}`} />
-              <Tooltip {...commonTooltipProps} />
-              <Legend wrapperStyle={{ fontSize: '12px', color: tickColor }}/>
-              <Line type="monotone" dataKey="total" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6, fill: 'hsl(var(--primary))' }} />
-            </LineChart>
-          )}
-          {trendChartType === 'area' && (
-            <AreaChart {...commonCartesianProps}>
-              <CartesianGrid strokeDasharray="3 3" stroke={popoverBorderColor} />
-              <XAxis dataKey="name" stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} />
-              <YAxis stroke={tickColor} fontSize={12} tickLine={false} axisLine={{stroke: popoverBorderColor}} tickFormatter={(value) => `${currencySymbol}${value}`} />
-              <Tooltip {...commonTooltipProps} />
-              <Legend wrapperStyle={{ fontSize: '12px', color: tickColor }}/>
-              <Area type="monotone" dataKey="total" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-            </AreaChart>
-          )}
-        </ResponsiveContainer>
-      </TabsContent>
-      <TabsContent value="pie">
-         <div className="mb-4 w-full sm:w-1/3">
-            <Select value={categoryChartType} onValueChange={(value) => setCategoryChartType(value as 'pie' | 'donut')}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select chart type" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="pie">Pie Chart</SelectItem>
-                    <SelectItem value="donut">Donut Chart</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-        {categorySpendingData.length > 0 ? (
-          <ResponsiveContainer {...commonChartProps}>
+  if (chartType === 'pie') {
+     if (categorySpendingData.length === 0) {
+        return <CardDescription className="text-center py-8">No category spending data available.</CardDescription>;
+     }
+    return (
+      <div className="flex flex-col md:flex-row items-center gap-0 md:gap-4">
+        <ResponsiveContainer {...pieChartContainerProps} className="flex-shrink-0 md:w-1/2">
             <PieChart>
               <Pie
                 activeIndex={activeIndex}
@@ -262,38 +219,43 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
                 data={categorySpendingData}
                 cx="50%"
                 cy="50%"
-                innerRadius={categoryChartType === 'donut' ? 70 : 50} // Adjust innerRadius for Donut
-                outerRadius={100}
+                innerRadius={50} // For Donut
+                outerRadius={75}
                 fill="hsl(var(--primary))" 
                 dataKey="value"
                 onMouseEnter={onPieEnter}
-                paddingAngle={categorySpendingData.length > 1 ? 2 : 0}
+                paddingAngle={2}
+                cornerRadius={5}
               >
                 {categorySpendingData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke={popoverBorderColor} />
+                  <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--card))'} strokeWidth={2}/>
                 ))}
               </Pie>
-               <Legend 
-                iconSize={10}
-                wrapperStyle={{ fontSize: '12px', color: tickColor, paddingTop: '20px' }} // Added padding top
-                formatter={(value, entry) => <span style={{ color: tickColor }}>{value}</span>}
-               />
                <Tooltip
                 {...commonTooltipProps}
                 formatter={(value: number, name: string) => {
                     const percent = totalCategorySpending > 0 
-                                    ? ((value / totalCategorySpending) * 100).toFixed(2) 
-                                    : "0.00";
+                                    ? ((value / totalCategorySpending) * 100).toFixed(1) 
+                                    : "0.0";
                     return [`${currencySymbol}${value.toFixed(2)} (${percent}%)`, name];
                 }}
                />
             </PieChart>
           </ResponsiveContainer>
-        ) : (
-          <CardDescription className="text-center py-8">No category spending data available.</CardDescription>
-        )}
-      </TabsContent>
-    </Tabs>
-  );
+           <div className="w-full md:w-1/2 space-y-1.5 text-xs mt-2 md:mt-0">
+            {categorySpendingData.map((entry, index) => (
+              <div key={`legend-${index}`} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.fill }} />
+                  <span className="text-muted-foreground">{entry.name}</span>
+                </div>
+                <span className="font-medium text-foreground">{formatCurrency(entry.value, currencySymbol)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+    );
+  }
+  
+  return null; // Should not reach here
 }
-

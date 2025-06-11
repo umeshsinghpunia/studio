@@ -13,115 +13,107 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
   :root {
-    /* SpendWise Theme - Light Mode */
-    /* Background: Light Gray (#F0F4F5) -> hsl(195, 27%, 95%) */
-    --background: 195 27% 95%;
-    /* Foreground: Dark Gray for readability */
-    --foreground: 210 10% 25%;
+    /* Dribbble Inspired Light Mode Palette */
+    --background: 220 13% 96%; /* #F3F4F6 - Light gray main background */
+    --foreground: 224 71% 4%; /* #09090B - Dark text for readability */
 
-    /* Card: Slightly lighter than background or white, with subtle border */
-    --card: 0 0% 100%; /* White cards */
-    --card-foreground: 210 10% 25%;
+    --card: 0 0% 100%; /* #FFFFFF - White cards */
+    --card-foreground: 224 71% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 10% 25%;
+    --popover-foreground: 224 71% 4%;
 
-    /* Primary: Muted Teal (#73B9BC) -> hsl(183, 30%, 60%) */
-    --primary: 183 30% 60%;
-    --primary-foreground: 0 0% 100%; /* White text on teal */
+    /* Primary: Purple from Dribbble design (approx #7F56D9) */
+    --primary: 258 65% 60%;
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    /* Secondary: A lighter, less saturated teal for secondary elements */
-    --secondary: 183 25% 75%;
-    --secondary-foreground: 183 30% 25%; /* Darker teal text */
+    /* Secondary: A lighter, less saturated purple or neutral gray */
+    --secondary: 258 60% 75%;
+    --secondary-foreground: 258 65% 20%;
 
     /* Muted: For subtle text and borders */
-    --muted: 195 20% 88%;
-    --muted-foreground: 195 10% 45%;
+    --muted: 220 9% 88%; /* Lighter gray for muted elements */
+    --muted-foreground: 220 9% 45%; /* Slightly darker gray for muted text */
 
-    /* Accent: Soft Coral (#D98E73) -> hsl(18, 58%, 65%) */
-    --accent: 18 58% 65%;
-    --accent-foreground: 0 0% 100%; /* White text on coral */
+    /* Accent: Using a vibrant color from charts or a secondary highlight */
+    --accent: 258 65% 60%; /* Using primary as accent for now, can be changed */
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%; /* Standard red for errors */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 195 20% 85%; /* Slightly darker than background for borders */
+    --border: 220 13% 90%; /* #E5E7EB - Light border for cards */
     --input: 0 0% 100%; /* White input background */
-    --ring: 183 30% 60%; /* Primary color for focus rings */
+    --ring: 258 65% 60%; /* Primary color for focus rings */
 
-    --radius: 0.5rem; /* Matches ShadCN default */
+    --radius: 0.5rem;
 
-    /* Chart Colors - Aligned with the new palette */
-    --chart-1: 183 30% 60%; /* Primary Teal */
-    --chart-2: 18 58% 65%;  /* Accent Coral */
-    --chart-3: 183 25% 75%; /* Secondary Light Teal */
-    --chart-4: 18 40% 75%;  /* Lighter Coral */
-    --chart-5: 195 15% 70%; /* Muted Gray-Blue */
+    /* Chart Colors - Inspired by Dribbble image */
+    --chart-1: 258 65% 60%; /* Primary Purple */
+    --chart-2: 45 100% 50%; /* Yellow */
+    --chart-3: 130 60% 50%; /* Green */
+    --chart-4: 200 80% 55%; /* Blue */
+    --chart-5: 25 90% 60%;  /* Orange */
 
     /* Sidebar Colors - Light Mode */
-    --sidebar-background: 0 0% 100%; /* White sidebar for a clean look */
-    --sidebar-foreground: 210 10% 25%;
-    --sidebar-primary: 183 30% 60%;
+    --sidebar-background: 210 17% 98%; /* #F9FAFB - Very light gray/off-white sidebar */
+    --sidebar-foreground: 224 71% 15%; /* Darker text for sidebar */
+    --sidebar-primary: 258 65% 60%; /* Purple for icons/text */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 195 27% 92%; /* Very light gray for active/hover */
-    --sidebar-accent-foreground: 183 30% 55%; /* Primary color for text on accent */
-    --sidebar-border: 195 20% 90%;
-    --sidebar-ring: 183 30% 60%;
+    --sidebar-accent: 258 65% 95%; /* Light purple for active/hover background */
+    --sidebar-accent-foreground: 258 65% 55%; /* Purple for text on accent */
+    --sidebar-border: 220 13% 90%; /* Light border for sidebar elements if any */
+    --sidebar-ring: 258 65% 60%;
   }
 
   .dark {
-    /* SpendWise Theme - Dark Mode */
-    /* Background: Very Dark Desaturated Teal/Gray */
-    --background: 183 10% 10%;
-    /* Foreground: Light Gray for text */
-    --foreground: 195 15% 88%;
+    /* Dribbble Inspired Dark Mode Palette (Conceptual) */
+    --background: 222 47% 11%; /* Dark slate gray */
+    --foreground: 210 40% 98%; /* Light text */
 
-    /* Card: Slightly lighter than background */
-    --card: 183 10% 15%;
-    --card-foreground: 195 15% 88%;
+    --card: 222 47% 15%; /* Slightly lighter than background */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 183 10% 12%;
-    --popover-foreground: 195 15% 88%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Primary: Muted Teal (#73B9BC) - slightly brighter for dark mode */
-    --primary: 183 35% 65%;
-    --primary-foreground: 183 30% 10%; /* Dark text for contrast */
+    /* Primary: Brighter Purple for dark mode */
+    --primary: 258 70% 65%;
+    --primary-foreground: 258 65% 15%;
 
-    /* Secondary: A darker, less saturated teal */
-    --secondary: 183 20% 35%;
-    --secondary-foreground: 195 15% 80%;
+    --secondary: 258 50% 40%;
+    --secondary-foreground: 210 40% 90%;
 
-    /* Muted: For subtle text and borders in dark mode */
-    --muted: 183 10% 25%;
-    --muted-foreground: 195 10% 60%;
+    --muted: 222 47% 25%;
+    --muted-foreground: 220 9% 55%;
 
-    /* Accent: Soft Coral (#D98E73) - slightly brighter for dark mode */
-    --accent: 18 60% 70%;
-    --accent-foreground: 18 50% 15%; /* Dark text for contrast */
+    /* Accent: Brighter version of light mode accent */
+    --accent: 258 70% 65%;
+    --accent-foreground: 258 65% 15%;
 
-    --destructive: 0 65% 55%; /* A slightly less intense red for dark mode */
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 183 10% 22%;
-    --input: 183 10% 18%; /* Dark input background */
-    --ring: 183 35% 65%; /* Primary color for focus rings */
-    
-    /* Chart Colors - Dark Mode */
-    --chart-1: 183 35% 65%; /* Primary Teal (Dark Mode) */
-    --chart-2: 18 60% 70%;  /* Accent Coral (Dark Mode) */
-    --chart-3: 183 30% 50%; /* Darker Teal */
-    --chart-4: 18 50% 60%;  /* Darker Coral */
-    --chart-5: 195 15% 55%; /* Muted Gray-Blue (Dark Mode) */
+    --border: 222 47% 22%;
+    --input: 222 47% 18%;
+    --ring: 258 70% 65%;
+
+    /* Chart Colors - Dark Mode (adjust brightness/saturation) */
+    --chart-1: 258 70% 65%;
+    --chart-2: 45 90% 55%;
+    --chart-3: 130 55% 55%;
+    --chart-4: 200 70% 60%;
+    --chart-5: 25 80% 65%;
 
     /* Sidebar Colors - Dark Mode */
-    --sidebar-background: 183 10% 8%; /* Slightly darker than main background */
-    --sidebar-foreground: 195 15% 88%;
-    --sidebar-primary: 183 35% 65%;
-    --sidebar-primary-foreground: 183 30% 10%;
-    --sidebar-accent: 183 10% 18%;      /* Active/hover nav item background (like input bg) */
-    --sidebar-accent-foreground: 183 35% 70%; /* Text on active/hover nav item */
-    --sidebar-border: 183 10% 20%;
-    --sidebar-ring: 183 35% 65%;
+    --sidebar-background: 222 47% 9%; /* Darker than main background */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 258 70% 65%;
+    --sidebar-primary-foreground: 258 65% 15%;
+    --sidebar-accent: 258 40% 25%; /* Darker purple accent */
+    --sidebar-accent-foreground: 258 70% 70%;
+    --sidebar-border: 222 47% 20%;
+    --sidebar-ring: 258 70% 65%;
   }
 }
 

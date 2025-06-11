@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -63,6 +64,7 @@ export default {
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
+          background: 'hsl(var(--sidebar-background))', // Explicitly add background
           foreground: 'hsl(var(--sidebar-foreground))',
           primary: 'hsl(var(--sidebar-primary))',
           'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
@@ -104,6 +106,9 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         "caret-blink": "caret-blink 1.25s ease-out infinite",
       },
+      boxShadow: {
+        'card': '0 4px 12px rgba(0, 0, 0, 0.05)', // Subtle shadow for cards
+      }
     },
   },
   plugins: [require('tailwindcss-animate')],

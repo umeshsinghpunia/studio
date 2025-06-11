@@ -2,69 +2,33 @@
 "use client";
 
 import type { Transaction } from '@/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatCurrency, cn, formatDate } from '@/lib/utils';
 import { ArrowRight, ListChecks } from 'lucide-react';
-import { getLucideIcon } from '@/lib/icons'; 
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-import type { AppUser } from '@/types';
-import { appConfig } from '@/config/app';
-import { getCountryByCode } from '@/lib/countries';
+// import { getLucideIcon } from '@/lib/icons'; // Not used in Dribbble style rows
+// import { useAuth } from '@/contexts/AuthContext'; // Currency symbol now passed as prop
+// import { doc, getDoc } from 'firebase/firestore'; // Currency symbol now passed as prop
+// import { db } from '@/lib/firebase/config'; // Currency symbol now passed as prop
+// import type { AppUser } from '@/types'; // Currency symbol now passed as prop
+// import { appConfig } from '@/config/app'; // Currency symbol now passed as prop
+// import { getCountryByCode } from '@/lib/countries'; // Currency symbol now passed as prop
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 interface TransactionListPreviewProps {
   transactions: Transaction[];
+  currencySymbol: string;
 }
 
-export default function TransactionListPreview({ transactions }: TransactionListPreviewProps) {
-  const { user: firebaseUser } = useAuth();
-  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
-
-  useEffect(() => {
-    if (firebaseUser) {
-      const fetchUserProfile = async () => {
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as AppUser;
-          if (userData.country) {
-            if (userData.country.currencySymbol) {
-              setCurrencySymbol(userData.country.currencySymbol);
-            } else if (userData.country.code) {
-              const countryFromList = getCountryByCode(userData.country.code);
-              if (countryFromList && countryFromList.currencySymbol) {
-                setCurrencySymbol(countryFromList.currencySymbol);
-              } else {
-                setCurrencySymbol(appConfig.defaultCurrencySymbol);
-              }
-            } else {
-              setCurrencySymbol(appConfig.defaultCurrencySymbol);
-            }
-          } else {
-            setCurrencySymbol(appConfig.defaultCurrencySymbol);
-          }
-        } else {
-          setCurrencySymbol(appConfig.defaultCurrencySymbol);
-        }
-      };
-      fetchUserProfile();
-    } else {
-      setCurrencySymbol(appConfig.defaultCurrencySymbol);
-    }
-  }, [firebaseUser]);
+export default function TransactionListPreview({ transactions, currencySymbol }: TransactionListPreviewProps) {
 
   if (transactions.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <ListChecks className="mx-auto h-12 w-12 mb-2" />
         <p>No recent transactions yet.</p>
-        <Button variant="link" asChild className="mt-2 text-accent">
+        <Button variant="link" asChild className="mt-2 text-primary">
           <Link href="/transactions/add">Add your first transaction</Link>
         </Button>
       </div>
@@ -72,42 +36,49 @@ export default function TransactionListPreview({ transactions }: TransactionList
   }
 
   return (
-    <div className="space-y-4">
-      <ScrollArea className="h-[300px]">
-        <ul className="space-y-3 pr-3">
-          {transactions.map((transaction) => {
-            const Icon = getLucideIcon(transaction.category.icon);
-            return (
-              <li key={transaction.id} className="flex items-center justify-between p-3 bg-card rounded-lg shadow-sm border border-border hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-full">
-                    {Icon ? <Icon className="h-5 w-5 text-primary" /> : <ListChecks className="h-5 w-5 text-primary" />}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm text-foreground">{transaction.category.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
-                  </div>
-                </div>
-                <p className={cn(
-                  "font-semibold text-sm",
-                  transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-500'
+    <div className="space-y-0"> {/* Removed space-y-4 for tighter table integration */}
+      {/* ScrollArea might not be needed if CardContent has its own scroll, or if limited items shown */}
+      {/* <ScrollArea className="h-[300px]"> */}
+        <Table className="text-xs">
+          <TableHeader className="[&_tr]:border-b-0"> {/* Remove border from header row for cleaner look */}
+            <TableRow className="hover:bg-transparent"> {/* Make header row not hoverable */}
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium">S.N</TableHead>
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium">Amount</TableHead>
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium">Category</TableHead>
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden sm:table-cell">Sub Category</TableHead> {/* Placeholder for sub-category */}
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium">Date</TableHead>
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden md:table-cell">Mode</TableHead> {/* Placeholder for mode */}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transactions.map((transaction, index) => (
+              <TableRow key={transaction.id} className="border-b-0 last:border-b-0 hover:bg-muted/30">
+                <TableCell className="py-2 px-3 text-muted-foreground">{index + 1}.</TableCell>
+                <TableCell className={cn(
+                  "py-2 px-3 font-medium",
+                  transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                 )}>
                   {transaction.type === 'income' ? '+' : '-'}
                   {formatCurrency(transaction.amount, currencySymbol)}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      </ScrollArea>
+                </TableCell>
+                <TableCell className="py-2 px-3 text-foreground">{transaction.category.name}</TableCell>
+                <TableCell className="py-2 px-3 text-muted-foreground hidden sm:table-cell">{transaction.notes?.split(' ')[0] || 'N/A'}</TableCell> {/* Example for sub-category */}
+                <TableCell className="py-2 px-3 text-muted-foreground">{formatDate(transaction.date, {day: '2-digit', month: 'short', year: 'numeric'})}</TableCell>
+                <TableCell className="py-2 px-3 text-muted-foreground hidden md:table-cell">UPI</TableCell> {/* Placeholder for mode */}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      {/* </ScrollArea> */}
       {transactions.length > 0 && (
-         <Button variant="outline" className="w-full hover:bg-accent hover:text-accent-foreground" asChild>
-            <Link href="/transactions">
-                View All Transactions <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-        </Button>
+         <div className="px-3 pt-1 pb-2">
+            <Button variant="link" className="w-full text-primary justify-start p-0 h-auto text-xs" asChild>
+                <Link href="/transactions">
+                    View All Transactions <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+            </Button>
+         </div>
       )}
     </div>
   );
 }
-
