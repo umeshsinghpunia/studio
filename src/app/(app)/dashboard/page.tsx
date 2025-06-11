@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/config';
-import { collection, query, where, onSnapshot, orderBy, getDocs, Timestamp, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, getDocs, Timestamp, doc, getDoc } from 'firebase/firestore';
 import type { Transaction } from '@/types';
 // import SummaryCards from '@/components/dashboard/SummaryCards'; // To be replaced
 import SpendingChart from '@/components/dashboard/SpendingChart';
@@ -101,19 +101,23 @@ export default function DashboardPage() {
     if (user) {
       const fetchUserProfile = async () => {
         const userDocRef = doc(db, 'users', user.uid);
-        // const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid))); // Querying by UID
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data() as AppUser;
           setUserProfile(userData);
           if (userData.country) {
              const countryDetails = getCountryByCode(userData.country.code);
-             setCurrencySymbol(countryDetails?.currencySymbol || appConfig.defaultCurrencySymbol);
+             if (countryDetails?.currencySymbol) {
+                setCurrencySymbol(countryDetails.currencySymbol);
+             } else if (userData.country.currencySymbol) {
+                setCurrencySymbol(userData.country.currencySymbol);
+             } else {
+                setCurrencySymbol(appConfig.defaultCurrencySymbol);
+             }
           } else {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
         } else {
-          // User profile doesn't exist, maybe set default or handle as needed
           setCurrencySymbol(appConfig.defaultCurrencySymbol);
           console.log("User profile document does not exist for UID:", user.uid);
         }
@@ -138,12 +142,11 @@ export default function DashboardPage() {
       const fetchedTransactions: Transaction[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        // Convert Firestore Timestamp to ISO string if necessary for dates
         const transactionDate = data.date instanceof Timestamp ? data.date.toDate().toISOString() : data.date;
         fetchedTransactions.push({ 
             id: doc.id, 
             ...data,
-            date: transactionDate, // Ensure date is ISO string
+            date: transactionDate, 
         } as Transaction);
       });
       setTransactions(fetchedTransactions);
@@ -166,9 +169,6 @@ export default function DashboardPage() {
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
     const balance = totalIncome - totalExpenses;
-
-    // For "Monthly Expenses" summary card, we might need current month's expenses
-    // This is a simplified version for now, using totalExpenses
     const currentMonthExpenses = totalExpenses; 
 
     return { totalIncome, totalExpenses, balance, currentMonthExpenses };
@@ -197,15 +197,14 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      {/* Top Row Summary Cards - Dribbble Style */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <SummaryCard 
           title="Account Balance" 
           value={summaryData.balance} 
           icon={Banknote} 
           currencySymbol={currencySymbol}
-          trend={summaryData.balance > 5000 ? "up" : "down"} // Example trend logic
-          trendText="6% more than last month" // Example trend text
+          trend={summaryData.balance > 5000 ? "up" : "down"} 
+          trendText="6% more than last month" 
           bgColorClass="bg-purple-500/10"
           iconColorClass="text-purple-600"
         />
@@ -219,18 +218,16 @@ export default function DashboardPage() {
           bgColorClass="bg-red-500/10"
           iconColorClass="text-red-600"
         />
-        {/* Placeholder Total Investment Card */}
         <SummaryCard 
             title="Total Investment" 
-            value={145555.00} // Placeholder value
+            value={145555.00} 
             icon={TrendingUpIcon} 
             currencySymbol={currencySymbol}
             trend="up"
-            trendText="Invest Amount ₹100,000.00" // Placeholder
+            trendText="Invest Amount ₹100,000.00" 
             bgColorClass="bg-indigo-500/10"
             iconColorClass="text-indigo-600"
         />
-        {/* Placeholder Goal Card */}
         <GoalCard
             title="Apple iPhone 17 Pro"
             required={145000}
@@ -239,9 +236,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Main Chart Row */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3 shadow-card">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1"> {/* Full width for Monthly Spending */}
+        <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Monthly Expenses</CardTitle>
             <div className="flex items-center gap-2">
@@ -263,7 +259,10 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="lg:col-span-2 shadow-card">
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5"> {/* Top Category and Bill & Subscriptions */}
+         <Card className="lg:col-span-3 shadow-card"> {/* Changed from lg:col-span-2 to lg:col-span-3 */}
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Top Category</CardTitle>
              <div className="flex items-center gap-2">
@@ -285,11 +284,28 @@ export default function DashboardPage() {
               <Button variant="link" className="w-full mt-2 text-primary justify-start pl-0">More Details...</Button>
           </CardContent>
         </Card>
+        
+        <Card className="lg:col-span-2 shadow-card"> {/* Changed from lg:col-span-3 to lg:col-span-2 */}
+            <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="font-headline text-lg">Bill & Subscription</CardTitle>
+                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-1">
+                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo netflix" />
+                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo spotify" />
+                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo figma" />
+                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo wifi" />
+                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo electricity" />
+                </div>
+            </CardContent>
+        </Card>
       </div>
 
-      {/* Lower Row */}
-       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3 shadow-card">
+       <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1"> {/* Full width for Recent Expenses */}
+        <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Recent Expenses</CardTitle>
             <div className="flex items-center gap-2">
@@ -310,25 +326,6 @@ export default function DashboardPage() {
             <TransactionListPreview transactions={recentTransactions} currencySymbol={currencySymbol} />
           </CardContent>
         </Card>
-        
-        {/* Placeholder Bill & Subscription Card */}
-        <Card className="lg:col-span-2 shadow-card">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="font-headline text-lg">Bill & Subscription</CardTitle>
-                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-1">
-                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo netflix" />
-                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo spotify" />
-                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo figma" />
-                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo wifi" />
-                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo electricity" />
-                </div>
-            </CardContent>
-        </Card>
       </div>
        <div className="mt-4 flex justify-end">
          <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -340,3 +337,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
