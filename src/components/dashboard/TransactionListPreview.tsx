@@ -36,18 +36,16 @@ export default function TransactionListPreview({ transactions, currencySymbol }:
   }
 
   return (
-    <div className="space-y-0"> {/* Removed space-y-4 for tighter table integration */}
-      {/* ScrollArea might not be needed if CardContent has its own scroll, or if limited items shown */}
-      {/* <ScrollArea className="h-[300px]"> */}
+    <div className="space-y-0">
         <Table className="text-xs">
-          <TableHeader className="[&_tr]:border-b-0"> {/* Remove border from header row for cleaner look */}
-            <TableRow className="hover:bg-transparent"> {/* Make header row not hoverable */}
+          <TableHeader className="[&_tr]:border-b-0">
+            <TableRow className="hover:bg-transparent">
               <TableHead className="h-8 px-3 text-muted-foreground font-medium">S.N</TableHead>
               <TableHead className="h-8 px-3 text-muted-foreground font-medium">Amount</TableHead>
               <TableHead className="h-8 px-3 text-muted-foreground font-medium">Category</TableHead>
-              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden sm:table-cell">Sub Category</TableHead> {/* Placeholder for sub-category */}
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden sm:table-cell">Sub Category</TableHead>
               <TableHead className="h-8 px-3 text-muted-foreground font-medium">Date</TableHead>
-              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden md:table-cell">Mode</TableHead> {/* Placeholder for mode */}
+              <TableHead className="h-8 px-3 text-muted-foreground font-medium hidden md:table-cell">Mode</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,14 +60,13 @@ export default function TransactionListPreview({ transactions, currencySymbol }:
                   {formatCurrency(transaction.amount, currencySymbol)}
                 </TableCell>
                 <TableCell className="py-2 px-3 text-foreground">{transaction.category.name}</TableCell>
-                <TableCell className="py-2 px-3 text-muted-foreground hidden sm:table-cell">{transaction.notes?.split(' ')[0] || 'N/A'}</TableCell> {/* Example for sub-category */}
+                <TableCell className="py-2 px-3 text-muted-foreground hidden sm:table-cell">{transaction.notes?.split(' ')[0] || 'N/A'}</TableCell>
                 <TableCell className="py-2 px-3 text-muted-foreground">{formatDate(transaction.date, {day: '2-digit', month: 'short', year: 'numeric'})}</TableCell>
-                <TableCell className="py-2 px-3 text-muted-foreground hidden md:table-cell">UPI</TableCell> {/* Placeholder for mode */}
+                <TableCell className="py-2 px-3 text-muted-foreground hidden md:table-cell">UPI</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      {/* </ScrollArea> */}
       {transactions.length > 0 && (
          <div className="px-3 pt-1 pb-2">
             <Button variant="link" className="w-full text-primary justify-start p-0 h-auto text-xs" asChild>
