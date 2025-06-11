@@ -16,7 +16,7 @@ interface SpendingChartProps {
   transactions: Transaction[];
 }
 
-const COLORS = ['#73B9BC', '#D98E73', '#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#4682b4', '#dda0dd'];
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', '#ff7f50', '#4682b4', '#dda0dd'];
 
 
 const renderActiveShape = (props: any, currencySymbol: string) => {
@@ -59,7 +59,7 @@ const renderActiveShape = (props: any, currencySymbol: string) => {
       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
       <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="hsl(var(--foreground))" className="text-xs">{`${currencySymbol}${value.toFixed(2)}`}</text>
       <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="hsl(var(--muted-foreground))" className="text-xs">
-        {`( ${(percent * 100).toFixed(2)}%)`}
+        {`(${(percent * 100).toFixed(2)}%)`}
       </text>
     </g>
   );
@@ -101,11 +101,17 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
         expensesByMonth[month] = (expensesByMonth[month] || 0) + t.amount;
       });
     
-    const sortedMonths = Object.keys(expensesByMonth).sort((a,b) => new Date(a).getTime() - new Date(b).getTime());
+    // Ensure consistent month order by parsing dates before sorting
+    const sortedMonths = Object.keys(expensesByMonth).sort((a,b) => {
+        const dateA = new Date(a.replace(/(\w{3})\s(\d{4})/, '$1 1, $2')); // Reformat for consistent parsing e.g. "Jan 2023" -> "Jan 1, 2023"
+        const dateB = new Date(b.replace(/(\w{3})\s(\d{4})/, '$1 1, $2'));
+        return dateA.getTime() - dateB.getTime();
+    });
+    
     const last6Months = sortedMonths.slice(-6);
     
     return last6Months.map(month => ({
-      name: month.split(' ')[0], 
+      name: month.split(' ')[0], // Show only month name like "Jan"
       total: expensesByMonth[month],
     }));
   }, [transactions]);
@@ -122,10 +128,13 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
           icon: t.category.icon
         };
       });
-    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value);
+    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value); // Sort by value descending
   }, [transactions]);
 
   const tickColor = theme === 'dark' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--muted-foreground))';
+  const popoverBgColor = theme === 'dark' ? 'hsl(var(--popover))' : 'hsl(var(--popover))';
+  const popoverBorderColor = theme === 'dark' ? 'hsl(var(--border))' : 'hsl(var(--border))';
+  const popoverTextColor = 'hsl(var(--popover-foreground))';
 
   if (transactions.filter(t => t.type === 'expense').length === 0) {
     return <CardDescription className="text-center py-8">No expense data to display chart.</CardDescription>;
@@ -144,14 +153,14 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
             <YAxis stroke={tickColor} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${currencySymbol}${value}`} />
             <Tooltip
               contentStyle={{
-                backgroundColor: theme === 'dark' ? 'hsl(var(--popover))' : 'hsl(var(--popover))',
-                borderColor: theme === 'dark' ? 'hsl(var(--border))' : 'hsl(var(--border))',
+                backgroundColor: popoverBgColor,
+                borderColor: popoverBorderColor,
                 borderRadius: 'var(--radius)',
-                color: 'hsl(var(--popover-foreground))'
+                color: popoverTextColor
               }}
-              labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              cursor={{ fill: 'hsl(var(--accent))', opacity: 0.1 }}
+              labelStyle={{ color: popoverTextColor }}
+              itemStyle={{ color: popoverTextColor }}
+              cursor={{ fill: 'hsl(var(--accent))', fillOpacity: 0.1 }}
               formatter={(value: number) => [`${currencySymbol}${value.toFixed(2)}`, "Total"]}
             />
             <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -159,30 +168,52 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
         </ResponsiveContainer>
       </TabsContent>
       <TabsContent value="pie">
-        <ResponsiveContainer width="100%" height={350}>
-          <PieChart>
-            <Pie
-              activeIndex={activeIndex}
-              activeShape={(props) => renderActiveShape(props, currencySymbol)}
-              data={categorySpendingData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              fill="hsl(var(--primary))"
-              dataKey="value"
-              onMouseEnter={onPieEnter}
-            >
-              {categorySpendingData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-             <Legend 
-              formatter={(value, entry) => <span style={{ color: tickColor }}>{value}</span>}
-             />
-          </PieChart>
-        </ResponsiveContainer>
+        {categorySpendingData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart>
+              <Pie
+                activeIndex={activeIndex}
+                activeShape={(props) => renderActiveShape(props, currencySymbol)}
+                data={categorySpendingData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={100}
+                fill="hsl(var(--primary))" // Default fill, overridden by Cell
+                dataKey="value"
+                onMouseEnter={onPieEnter}
+                paddingAngle={2}
+              >
+                {categorySpendingData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke={popoverBorderColor} />
+                ))}
+              </Pie>
+               <Legend 
+                iconSize={10}
+                wrapperStyle={{ fontSize: '12px', color: tickColor }}
+                formatter={(value, entry) => <span style={{ color: tickColor }}>{value}</span>}
+               />
+               <Tooltip
+                contentStyle={{
+                    backgroundColor: popoverBgColor,
+                    borderColor: popoverBorderColor,
+                    borderRadius: 'var(--radius)',
+                    color: popoverTextColor
+                }}
+                labelStyle={{ color: popoverTextColor }}
+                itemStyle={{ color: popoverTextColor }}
+                formatter={(value: number, name: string, props) => {
+                    const percent = ((value / props.payload.payload.reduce((sum: number, item: any) => sum + item.value, 0)) * 100).toFixed(2);
+                    return [`${currencySymbol}${value.toFixed(2)} (${percent}%)`, name];
+                }}
+               />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <CardDescription className="text-center py-8">No category spending data available.</CardDescription>
+        )}
       </TabsContent>
     </Tabs>
   );
 }
+
