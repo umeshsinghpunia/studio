@@ -46,6 +46,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { cn } from '@/lib/utils';
 import { appConfig } from '@/config/app';
 import { Input } from '@/components/ui/input';
+import PlanSelectionDialog from '@/components/pro/PlanSelectionDialog'; // Import the new dialog
 
 const navItemsPrimary = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -76,6 +77,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false); // State for plan dialog
 
   useEffect(() => {
     if (!loading && !user) {
@@ -155,6 +157,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
+    <>
     <div className="grid min-h-screen w-full md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] bg-background">
       <div className="hidden border-r bg-sidebar-background md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
@@ -170,8 +173,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavSection title="Other" items={navItemsOther} />
           </div>
           <div className="mt-auto p-4 border-t border-sidebar-border">
-             {/* Placeholder for Upgrade to PRO */}
-            <Button variant="outline" className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
+            <Button 
+              variant="outline" 
+              className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+              onClick={() => setIsPlanDialogOpen(true)} // Open dialog
+            >
                 Upgrade to PRO
             </Button>
              <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive mt-2">
@@ -212,7 +218,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <NavSection title="Other" items={navItemsOther} isMobile={true}/>
               </div>
               <div className="mt-auto p-4 border-t border-sidebar-border">
-                <Button variant="outline" className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+                  onClick={() => {
+                    setMobileMenuOpen(false); // Close mobile menu
+                    setIsPlanDialogOpen(true); // Open dialog
+                  }}
+                >
                     Upgrade to PRO
                 </Button>
                  <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive mt-2">
@@ -285,6 +298,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
+    <PlanSelectionDialog open={isPlanDialogOpen} onOpenChange={setIsPlanDialogOpen} />
+    </>
   );
 }
-
