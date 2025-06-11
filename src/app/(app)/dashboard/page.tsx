@@ -40,8 +40,10 @@ export default function DashboardPage() {
       setLoading(false);
       setError(null);
     }, (err) => {
-      console.error("Error fetching transactions: ", err);
-      setError("Failed to load transactions. Please try again later.");
+      console.error("Detailed error fetching transactions from Firestore: ", err);
+      console.log("Firebase error code (if available):", (err as any)?.code);
+      console.log("Firebase error message (if available):", (err as any)?.message);
+      setError("Failed to load transactions. Please check the browser console for more details and try again later.");
       setLoading(false);
     });
 
