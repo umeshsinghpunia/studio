@@ -84,18 +84,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   };
   
   const NavLink = ({ href, label, icon: Icon, isMobile }: typeof navItems[0] & {isMobile?: boolean}) => (
-    <Link href={href} passHref legacyBehavior>
-      <a
-        onClick={() => isMobile && setMobileMenuOpen(false)}
-        className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-          pathname === href && "bg-accent text-primary",
-          isMobile ? "text-lg" : "text-sm font-medium"
-        )}
-      >
-        <Icon className="h-5 w-5" />
-        {label}
-      </a>
+    <Link
+      href={href}
+      onClick={() => isMobile && setMobileMenuOpen(false)}
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+        pathname === href && "bg-accent text-primary",
+        isMobile ? "text-lg" : "text-sm font-medium"
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      {label}
     </Link>
   );
 
