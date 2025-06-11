@@ -1,9 +1,11 @@
+
 import type { Metadata } from 'next';
 import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/components/ThemeProvider'; // Import ThemeProvider
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { appConfig } from '@/config/app';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -18,10 +20,10 @@ const ptSans = PT_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'SpendWise - Track Your Expenses',
-  description: 'Modern expense tracker app to manage your income and expenses efficiently.',
+  title: `${appConfig.appName} - Track Your Expenses`,
+  description: appConfig.appDescription,
   icons: {
-    icon: '/logo.svg', // Assuming a logo.svg will be placed in public folder
+    icon: '/logo.svg',
   },
 };
 

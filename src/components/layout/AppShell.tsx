@@ -34,6 +34,7 @@ import {
 import { ThemeToggle } from '@/components/ThemeToggle';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { cn } from '@/lib/utils';
+import { appConfig } from '@/config/app';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -74,13 +75,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return null; // Or a redirect component, though useEffect handles it
   }
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'SW'; // SpendWise initials
-    const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+  const getInitials = (name: string | null | undefined): string => {
+    if (name && name.trim() !== '') {
+      return name.trim()[0].toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    return appConfig.defaultAvatarFallback;
   };
   
   const NavLink = ({ href, label, icon: Icon, isMobile }: typeof navItems[0] & {isMobile?: boolean}) => (
@@ -88,8 +87,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       href={href}
       onClick={() => isMobile && setMobileMenuOpen(false)}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-        pathname === href && "bg-accent text-primary",
+        "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+        pathname === href ? "bg-accent text-primary" : "text-muted-foreground",
         isMobile ? "text-lg" : "text-sm font-medium"
       )}
     >
@@ -105,8 +104,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-              <Image src="/logo.svg" alt="SpendWise Logo" width={32} height={32} />
-              <span className="font-headline text-xl">SpendWise</span>
+              <Image src="/logo.svg" alt={`${appConfig.appName} Logo`} width={32} height={32} />
+              <span className="font-headline text-xl">{appConfig.appName}</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -142,8 +141,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-2 text-lg font-semibold mb-4"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Image src="/logo.svg" alt="SpendWise Logo" width={28} height={28} />
-                  <span className="font-headline">SpendWise</span>
+                  <Image src="/logo.svg" alt={`${appConfig.appName} Logo`} width={28} height={28} />
+                  <span className="font-headline">{appConfig.appName}</span>
                 </Link>
                 {navItems.map((item) => (
                   <NavLink key={item.href} {...item} isMobile={true} />
