@@ -101,9 +101,8 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
         expensesByMonth[month] = (expensesByMonth[month] || 0) + t.amount;
       });
     
-    // Ensure consistent month order by parsing dates before sorting
     const sortedMonths = Object.keys(expensesByMonth).sort((a,b) => {
-        const dateA = new Date(a.replace(/(\w{3})\s(\d{4})/, '$1 1, $2')); // Reformat for consistent parsing e.g. "Jan 2023" -> "Jan 1, 2023"
+        const dateA = new Date(a.replace(/(\w{3})\s(\d{4})/, '$1 1, $2')); 
         const dateB = new Date(b.replace(/(\w{3})\s(\d{4})/, '$1 1, $2'));
         return dateA.getTime() - dateB.getTime();
     });
@@ -111,7 +110,7 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
     const last6Months = sortedMonths.slice(-6);
     
     return last6Months.map(month => ({
-      name: month.split(' ')[0], // Show only month name like "Jan"
+      name: month.split(' ')[0], 
       total: expensesByMonth[month],
     }));
   }, [transactions]);
@@ -128,8 +127,12 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
           icon: t.category.icon
         };
       });
-    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value); // Sort by value descending
+    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value);
   }, [transactions]);
+
+  const totalCategorySpending = useMemo(() => {
+    return categorySpendingData.reduce((sum, item) => sum + item.value, 0);
+  }, [categorySpendingData]);
 
   const tickColor = theme === 'dark' ? 'hsl(var(--muted-foreground))' : 'hsl(var(--muted-foreground))';
   const popoverBgColor = theme === 'dark' ? 'hsl(var(--popover))' : 'hsl(var(--popover))';
@@ -179,7 +182,7 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
                 cy="50%"
                 innerRadius={60}
                 outerRadius={100}
-                fill="hsl(var(--primary))" // Default fill, overridden by Cell
+                fill="hsl(var(--primary))" 
                 dataKey="value"
                 onMouseEnter={onPieEnter}
                 paddingAngle={2}
@@ -202,8 +205,10 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
                 }}
                 labelStyle={{ color: popoverTextColor }}
                 itemStyle={{ color: popoverTextColor }}
-                formatter={(value: number, name: string, props) => {
-                    const percent = ((value / props.payload.payload.reduce((sum: number, item: any) => sum + item.value, 0)) * 100).toFixed(2);
+                formatter={(value: number, name: string) => {
+                    const percent = totalCategorySpending > 0 
+                                    ? ((value / totalCategorySpending) * 100).toFixed(2) 
+                                    : "0.00";
                     return [`${currencySymbol}${value.toFixed(2)} (${percent}%)`, name];
                 }}
                />
