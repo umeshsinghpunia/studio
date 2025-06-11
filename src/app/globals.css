@@ -60,48 +60,48 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .dark {
-    --background: 315 49% 21%; /* Dark Purple from 511D43 */
-    --foreground: 210 15% 85%; /* Light gray for text */
+    --background: 220 13% 18%; /* Dark Slate Gray */
+    --foreground: 210 20% 90%; /* Light Gray for text */
 
-    --card: 315 45% 25%; /* Slightly lighter purple than background */
-    --card-foreground: 210 15% 85%;
+    --card: 220 13% 22%; /* Slightly lighter than background */
+    --card-foreground: 210 20% 90%;
 
-    --popover: 315 45% 23%; /* Similar to card, slightly adjusted */
-    --popover-foreground: 210 15% 85%;
+    --popover: 220 13% 20%; /* Similar to card */
+    --popover-foreground: 210 20% 90%;
 
     --primary: 342 65% 34%; /* Magenta/Purple from 901E3E */
     --primary-foreground: 342 20% 95%; /* Very light pinkish-gray for text on primary */
 
-    --secondary: 342 50% 28%; /* Darker, less saturated version of primary */
-    --secondary-foreground: 210 15% 80%; /* Lighter text for secondary */
+    --secondary: 342 50% 45%; /* Adjusted for new background */
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 210 15% 28%; /* Neutral dark gray, slightly lighter to contrast new bg */
+    --muted: 220 13% 28%; /* A bit lighter gray than card */
     --muted-foreground: 210 15% 65%; /* Medium-light gray for muted text */
 
-    --accent: 125 19% 68%; /* Light Muted Green from 9BC09C */
-    --accent-foreground: 125 25% 15%; /* Dark green for text on light green accent */
+    --accent: 125 35% 60%; /* Adjusted Light Muted Green from 9BC09C */
+    --accent-foreground: 125 50% 15%; /* Dark green for text on light green accent */
 
     --destructive: 0 70% 50%; /* Bright Red from DC2525 */
     --destructive-foreground: 0 0% 98%; /* Light text for destructive actions */
 
-    --border: 315 40% 30%; /* Subtle border, lighter than background */
-    --input: 315 45% 28%; /* Dark input background, similar to card */
-    --ring: 342 65% 34%; /* New primary color for focus rings */
+    --border: 220 13% 30%; /* Subtle border, lighter than card */
+    --input: 220 13% 25%; /* Dark input background */
+    --ring: 342 65% 34%; /* Primary color for focus rings */
     
-    --chart-1: 342 65% 34%; /* New Primary - Magenta/Purple */
-    --chart-2: 125 19% 68%; /* New Accent - Light Muted Green */
+    --chart-1: 342 65% 34%; /* Primary - Magenta/Purple */
+    --chart-2: 125 35% 60%; /* Accent - Adjusted Light Muted Green */
     --chart-3: 200 50% 55%; /* Muted Sky Blue (contrast) */
     --chart-4: 30 70% 60%;  /* Muted Peach (contrast) */
     --chart-5: 50 50% 60%;  /* Muted Butter Yellow (contrast) */
 
-    --sidebar-background: 315 49% 19%; /* Slightly darker shade of main background */
-    --sidebar-foreground: 210 15% 85%; /* Main light text for sidebar */
-    --sidebar-primary: 342 65% 34%; /* Main primary, for icons/highlights in sidebar */
-    --sidebar-primary-foreground: 342 20% 95%; /* Text on sidebar-primary */
-    --sidebar-accent: 315 45% 25%; /* Active/hover nav item background (like card bg) */
-    --sidebar-accent-foreground: 125 19% 68%; /* Text on active/hover nav item (new main accent) */
-    --sidebar-border: 315 40% 28%; /* Border for sidebar elements */
-    --sidebar-ring: 342 65% 34%; /* Main primary for focus rings in sidebar */
+    --sidebar-background: 220 13% 16%; /* Slightly darker than main background */
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 342 65% 34%;
+    --sidebar-primary-foreground: 342 20% 95%;
+    --sidebar-accent: 220 13% 22%; /* Active/hover nav item background (like card bg) */
+    --sidebar-accent-foreground: 125 35% 60%; /* Text on active/hover nav item (new accent) */
+    --sidebar-border: 220 13% 28%;
+    --sidebar-ring: 342 65% 34%;
   }
 }
 
