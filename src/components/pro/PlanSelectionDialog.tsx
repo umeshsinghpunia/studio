@@ -16,6 +16,7 @@ import { CheckCircle, Star } from "lucide-react";
 interface PlanSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccessfulUpgrade: () => void; // Callback for successful upgrade
 }
 
 const plans = [
@@ -28,6 +29,9 @@ const plans = [
       "Advanced Reporting",
       "Priority Support",
       "Budgeting Tools",
+      "Access to Investment, Card, Goals features",
+      "Access to Insight & Analytics tools",
+      "Full Help Center & Support",
     ],
     icon: Star,
     bgColor: "bg-primary/10",
@@ -54,11 +58,11 @@ const plans = [
   },
 ];
 
-export default function PlanSelectionDialog({ open, onOpenChange }: PlanSelectionDialogProps) {
+export default function PlanSelectionDialog({ open, onOpenChange, onSuccessfulUpgrade }: PlanSelectionDialogProps) {
   const handleChoosePlan = (planName: string) => {
     console.log(`Plan chosen: ${planName}`);
-    onOpenChange(false);
-    // Here you would typically navigate to a checkout page or initiate a payment flow
+    onSuccessfulUpgrade(); // Call the callback to update AppShell state
+    // onOpenChange(false); // Dialog closing is now handled by onSuccessfulUpgrade in AppShell
   };
 
   return (
@@ -113,3 +117,5 @@ export default function PlanSelectionDialog({ open, onOpenChange }: PlanSelectio
     </Dialog>
   );
 }
+
+    

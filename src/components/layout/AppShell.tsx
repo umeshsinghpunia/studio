@@ -15,18 +15,18 @@ import {
   Receipt,
   Settings,
   DollarSign,
-  Briefcase, // Placeholder for Investment
-  ShieldCheck, // Placeholder for Card (Security/Payment)
-  Target, // Placeholder for Goals
-  BarChart3, // Placeholder for Insight
-  LineChart, // Placeholder for Analytics
-  HelpCircle, // Placeholder for Help Center
-  LifeBuoy, // Placeholder for Support
+  Briefcase, 
+  ShieldCheck, 
+  Target, 
+  BarChart3, 
+  LineChart, 
+  HelpCircle, 
+  LifeBuoy, 
   MoreHorizontal,
   Bell,
   Search
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,38 +46,40 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { cn } from '@/lib/utils';
 import { appConfig } from '@/config/app';
 import { Input } from '@/components/ui/input';
-import PlanSelectionDialog from '@/components/pro/PlanSelectionDialog'; // Import the new dialog
-
-const navItemsPrimary = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/transactions', label: 'All Expenses', icon: ListChecks }, // Renamed
-  { href: '/bills', label: 'Bill & Subscription', icon: Receipt }, // Combined
-  // { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard }, // Covered by Bill & Subscription
-  // Placeholders for new items from Dribbble design
-  { href: '#', label: 'Investment', icon: Briefcase, disabled: true },
-  { href: '#', label: 'Card', icon: ShieldCheck, disabled: true },
-  { href: '#', label: 'Goals', icon: Target, disabled: true },
-];
-
-const navItemsTools = [
-  { href: '#', label: 'Insight', icon: BarChart3, disabled: true },
-  { href: '#', label: 'Analytics', icon: LineChart, disabled: true },
-];
-
-const navItemsOther = [
-  { href: '/profile', label: 'Profile', icon: UserCircle }, // Assuming Settings is profile
-  { href: '#', label: 'Help Center', icon: HelpCircle, disabled: true },
-  { href: '#', label: 'Support', icon: LifeBuoy, disabled: true },
-];
+import PlanSelectionDialog from '@/components/pro/PlanSelectionDialog';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
-  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false); // State for plan dialog
+  const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
+  const [isProUser, setIsProUser] = useState(false); // State for Pro status
+
+  const navItemsPrimary = useMemo(() => [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
+    { href: '/transactions', label: 'All Expenses', icon: ListChecks, disabled: false },
+    { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false },
+    { href: '#', label: 'Investment', icon: Briefcase, disabled: !isProUser },
+    { href: '#', label: 'Card', icon: ShieldCheck, disabled: !isProUser },
+    { href: '#', label: 'Goals', icon: Target, disabled: !isProUser },
+  ], [isProUser]);
+
+  const navItemsTools = useMemo(() => [
+    { href: '#', label: 'Insight', icon: BarChart3, disabled: !isProUser },
+    { href: '#', label: 'Analytics', icon: LineChart, disabled: !isProUser },
+  ], [isProUser]);
+
+  const navItemsOther = useMemo(() => [
+    { href: '/profile', label: 'Profile', icon: UserCircle, disabled: false },
+    { href: '#', label: 'Help Center', icon: HelpCircle, disabled: !isProUser },
+    { href: '#', label: 'Support', icon: LifeBuoy, disabled: !isProUser },
+  ], [isProUser]);
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -90,14 +92,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const dateString = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-      const timezone = now.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2] || 'IN'; // Fallback
+      const timezone = now.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2] || 'IN'; 
       setCurrentTime(`${timeString} | ${dateString} | ${timezone}`);
     };
-    updateDateTime(); // Set initial time
-    const timer = setInterval(updateDateTime, 1000); // Update every second
+    updateDateTime(); 
+    const timer = setInterval(updateDateTime, 1000); 
     return () => clearInterval(timer);
   }, []);
-
 
   const handleLogout = async () => {
     try {
@@ -106,6 +107,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleSuccessfulUpgrade = () => {
+    setIsProUser(true);
+    setIsPlanDialogOpen(false); // Close the dialog
+    toast({ title: "Upgrade Successful!", description: "Pro features are now unlocked." });
   };
 
   if (loading) {
@@ -145,7 +152,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </Link>
   );
 
-  const NavSection = ({ title, items, isMobile }: { title: string, items: typeof navItemsPrimary, isMobile?: boolean }) => (
+  const NavSection = ({ title, items, isMobile }: { title: string, items: ReturnType<typeof useMemo<typeof navItemsPrimary[0][]>>, isMobile?: boolean }) => (
     <div className="px-2 lg:px-4">
       <h3 className="mb-2 px-3 text-xs font-semibold uppercase text-sidebar-foreground/60 tracking-wider">{title}</h3>
       <nav className="grid items-start gap-0.5">
@@ -176,9 +183,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Button 
               variant="outline" 
               className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
-              onClick={() => setIsPlanDialogOpen(true)} // Open dialog
+              onClick={() => setIsPlanDialogOpen(true)}
+              disabled={isProUser} // Optionally disable if already Pro
             >
-                Upgrade to PRO
+                {isProUser ? "Pro Plan Active" : "Upgrade to PRO"}
             </Button>
              <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive mt-2">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -222,11 +230,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   variant="outline" 
                   className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
                   onClick={() => {
-                    setMobileMenuOpen(false); // Close mobile menu
-                    setIsPlanDialogOpen(true); // Open dialog
+                    setMobileMenuOpen(false); 
+                    setIsPlanDialogOpen(true); 
                   }}
+                  disabled={isProUser}
                 >
-                    Upgrade to PRO
+                    {isProUser ? "Pro Plan Active" : "Upgrade to PRO"}
                 </Button>
                  <Button onClick={handleLogout} variant="ghost" className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive mt-2">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -298,7 +307,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
-    <PlanSelectionDialog open={isPlanDialogOpen} onOpenChange={setIsPlanDialogOpen} />
+    <PlanSelectionDialog 
+        open={isPlanDialogOpen} 
+        onOpenChange={setIsPlanDialogOpen} 
+        onSuccessfulUpgrade={handleSuccessfulUpgrade}
+    />
     </>
   );
 }
+
+    
