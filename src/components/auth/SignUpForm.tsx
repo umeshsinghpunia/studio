@@ -67,6 +67,7 @@ export default function SignUpForm() {
       toast({ title: 'Account Created', description: 'Welcome to SpendWise!' });
       router.push('/dashboard');
     } catch (error: any) {
+      console.error("Sign up error details:", error);
       let errorMessage = 'An unexpected error occurred. Please try again.';
        if (error.code) {
         switch (error.code) {
