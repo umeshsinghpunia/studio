@@ -60,23 +60,23 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .dark {
-    --background: 220 13% 18%; /* Dark Slate Gray */
-    --foreground: 210 20% 90%; /* Light Gray for text */
+    --background: 220 10% 12%; /* Very Dark Gray, almost black */
+    --foreground: 210 20% 95%; /* Very Light Gray for text */
 
-    --card: 220 13% 22%; /* Slightly lighter than background */
-    --card-foreground: 210 20% 90%;
+    --card: 220 10% 15%; /* Slightly lighter than background */
+    --card-foreground: 210 20% 95%;
 
-    --popover: 220 13% 20%; /* Similar to card */
-    --popover-foreground: 210 20% 90%;
+    --popover: 220 10% 14%; /* Similar to card, slightly darker */
+    --popover-foreground: 210 20% 95%;
 
     --primary: 342 65% 34%; /* Magenta/Purple from 901E3E */
     --primary-foreground: 342 20% 95%; /* Very light pinkish-gray for text on primary */
 
     --secondary: 342 50% 45%; /* Adjusted for new background */
-    --secondary-foreground: 210 20% 90%;
+    --secondary-foreground: 210 20% 95%;
 
-    --muted: 220 13% 28%; /* A bit lighter gray than card */
-    --muted-foreground: 210 15% 65%; /* Medium-light gray for muted text */
+    --muted: 220 10% 20%; /* A bit lighter gray than card */
+    --muted-foreground: 210 15% 70%; /* Medium-light gray for muted text */
 
     --accent: 125 35% 60%; /* Adjusted Light Muted Green from 9BC09C */
     --accent-foreground: 125 50% 15%; /* Dark green for text on light green accent */
@@ -84,8 +84,8 @@ h1, h2, h3, h4, h5, h6 {
     --destructive: 0 70% 50%; /* Bright Red from DC2525 */
     --destructive-foreground: 0 0% 98%; /* Light text for destructive actions */
 
-    --border: 220 13% 30%; /* Subtle border, lighter than card */
-    --input: 220 13% 25%; /* Dark input background */
+    --border: 220 10% 25%; /* Subtle border, lighter than card */
+    --input: 220 10% 18%; /* Dark input background */
     --ring: 342 65% 34%; /* Primary color for focus rings */
     
     --chart-1: 342 65% 34%; /* Primary - Magenta/Purple */
@@ -94,13 +94,13 @@ h1, h2, h3, h4, h5, h6 {
     --chart-4: 30 70% 60%;  /* Muted Peach (contrast) */
     --chart-5: 50 50% 60%;  /* Muted Butter Yellow (contrast) */
 
-    --sidebar-background: 220 13% 16%; /* Slightly darker than main background */
-    --sidebar-foreground: 210 20% 90%;
+    --sidebar-background: 220 10% 10%; /* Slightly darker than main background */
+    --sidebar-foreground: 210 20% 95%;
     --sidebar-primary: 342 65% 34%;
     --sidebar-primary-foreground: 342 20% 95%;
-    --sidebar-accent: 220 13% 22%; /* Active/hover nav item background (like card bg) */
+    --sidebar-accent: 220 10% 18%; /* Active/hover nav item background (like input bg) */
     --sidebar-accent-foreground: 125 35% 60%; /* Text on active/hover nav item (new accent) */
-    --sidebar-border: 220 13% 28%;
+    --sidebar-border: 220 10% 20%;
     --sidebar-ring: 342 65% 34%;
   }
 }
@@ -115,3 +115,4 @@ h1, h2, h3, h4, h5, h6 {
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
