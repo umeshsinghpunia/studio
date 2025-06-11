@@ -56,3 +56,22 @@ export interface Transaction {
   createdAt: string; // ISO string date
   updatedAt?: string; // ISO string date
 }
+
+export type SubscriptionStatus = 'active' | 'inactive' | 'pending_payment' | 'cancelled';
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  name: string;
+  amount: number;
+  billingCycle: 'monthly' | 'yearly' | 'weekly' | 'daily';
+  nextPaymentDate: string; // ISO string
+  category?: string;
+  notes?: string;
+  status: SubscriptionStatus;
+  createdAt: string; // ISO string date
+  updatedAt?: string; // ISO string date
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySubscriptionId?: string; // For Razorpay's recurring subscriptions
+}

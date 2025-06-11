@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -22,26 +22,24 @@ import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Repeat, Tag, CreditCard } from 'lucide-react';
+import { CalendarIcon, Repeat, Tag, CreditCard, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { appConfig } from '@/config/app';
-import type { AppUser } from '@/types';
+import type { AppUser, Subscription, SubscriptionStatus } from '@/types';
 import { getCountryByCode } from '@/lib/countries';
-import { db } from '@/lib/firebase/config'; // Placeholder
-import { doc, getDoc } from 'firebase/firestore'; // Placeholder
+import { db } from '@/lib/firebase/config';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
 
-// Placeholder types - replace with actual types when backend is integrated
-interface Subscription {
-  id: string;
-  name: string;
-  amount: number;
-  billingCycle: 'monthly' | 'yearly' | 'weekly' | 'daily';
-  nextPaymentDate: string; // ISO string
-  category?: string;
-  notes?: string;
+// Extend Window interface for Razorpay
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
 }
+
+const RAZORPAY_KEY_ID_PLACEHOLDER = "rzp_test_YOUR_KEY_ID"; // Replace with your actual Key ID
 
 const subscriptionFormSchema = z.object({
   name: z.string().min(2, { message: 'Subscription name must be at least 2 characters.' }),
@@ -56,7 +54,7 @@ type SubscriptionFormValues = z.infer<typeof subscriptionFormSchema>;
 
 interface SubscriptionFormProps {
   mode: 'add' | 'edit';
-  subscription?: Subscription; // For edit mode
+  subscription?: Subscription;
 }
 
 const billingCycles = [
@@ -71,7 +69,32 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
   const { toast } = useToast();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
+  const [formValuesForPayment, setFormValuesForPayment] = useState<SubscriptionFormValues | null>(null);
+
+  const loadRazorpayScript = useCallback(() => {
+    return new Promise((resolve) => {
+      if (document.getElementById('razorpay-checkout-js')) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'razorpay-checkout-js';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  }, []);
+
+  useEffect(() => {
+    loadRazorpayScript();
+  }, [loadRazorpayScript]);
 
   useEffect(() => {
     if (user) {
@@ -108,6 +131,150 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     },
   });
 
+  const handleRazorpaySuccess = async (
+    razorpayResponse: {
+      razorpay_payment_id: string;
+      razorpay_order_id: string;
+      razorpay_signature: string;
+    },
+    originalFormValues: SubscriptionFormValues
+  ) => {
+    if (!user) {
+      toast({ title: 'Error', description: 'User not logged in.', variant: 'destructive' });
+      setIsPaying(false);
+      return;
+    }
+
+    setIsLoading(true); // Use general loading for Firestore op
+    try {
+      // STUB: Backend call to verify payment and save subscription
+      // Replace with your actual backend API call
+      // const verificationResponse = await fetch('/api/razorpay/verify-payment', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ ...razorpayResponse, ...originalFormValues, userId: user.uid }),
+      // });
+      // if (!verificationResponse.ok) throw new Error('Payment verification failed.');
+      // const verificationData = await verificationResponse.json();
+
+      // For prototype: directly save to Firestore after mock verification
+      console.log('Razorpay success, proceed to save:', razorpayResponse, originalFormValues);
+
+      const subscriptionDataToSave = {
+        userId: user.uid,
+        name: originalFormValues.name,
+        amount: originalFormValues.amount,
+        billingCycle: originalFormValues.billingCycle,
+        nextPaymentDate: originalFormValues.nextPaymentDate.toISOString(),
+        category: originalFormValues.category || '',
+        notes: originalFormValues.notes || '',
+        status: 'active' as SubscriptionStatus,
+        razorpayOrderId: razorpayResponse.razorpay_order_id,
+        razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+        // razorpaySubscriptionId: if using Razorpay Subscriptions API for recurring
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await addDoc(collection(db, 'users', user.uid, 'subscriptions'), subscriptionDataToSave);
+
+      toast({ title: 'Subscription Added', description: 'New subscription active and payment successful.' });
+      router.push('/subscriptions');
+
+    } catch (error) {
+      console.error('Error verifying payment or saving subscription:', error);
+      toast({
+        title: 'Payment Error',
+        description: (error as Error).message || 'Could not process payment or save subscription. Please contact support.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+      setIsPaying(false);
+    }
+  };
+
+
+  const initiateRazorpayPayment = async (values: SubscriptionFormValues) => {
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be logged in.', variant: 'destructive' });
+      return;
+    }
+    setIsPaying(true);
+    setFormValuesForPayment(values); // Store form values for success handler
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      toast({ title: 'Error', description: 'Razorpay SDK could not be loaded. Please try again.', variant: 'destructive' });
+      setIsPaying(false);
+      return;
+    }
+
+    try {
+      // STUB: Backend call to create Razorpay order
+      // Replace with your actual backend API call
+      // const orderResponse = await fetch('/api/razorpay/create-order', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ amount: values.amount * 100, currency: 'INR' }) // amount in paise
+      // });
+      // if (!orderResponse.ok) throw new Error('Failed to create Razorpay order.');
+      // const orderData = await orderResponse.json();
+      // const orderId = orderData.id;
+
+      // For prototype: Use a placeholder order_id or simulate order creation
+      const orderId = `order_prototype_${Date.now()}`; // Placeholder
+      console.log("Simulated Razorpay Order ID:", orderId, "Amount (Paise):", values.amount * 100);
+
+
+      const options = {
+        key: RAZORPAY_KEY_ID_PLACEHOLDER,
+        amount: values.amount * 100, // Amount in paise
+        currency: "INR",
+        name: values.name,
+        description: `Payment for ${values.name} subscription`,
+        order_id: orderId,
+        handler: (response: any) => {
+          handleRazorpaySuccess(response, values);
+        },
+        prefill: {
+          name: user.displayName || "Valued Customer",
+          email: user.email || "",
+          contact: "" // Can fetch from user profile if available
+        },
+        notes: {
+          subscription_name: values.name,
+          user_id: user.uid,
+        },
+        theme: {
+          color: "#73B9BC" // Use primary color from your theme
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response: any) => {
+        console.error('Razorpay payment failed:', response);
+        toast({
+          title: 'Payment Failed',
+          description: response.error.description || 'Your payment could not be processed.',
+          variant: 'destructive',
+        });
+        setIsPaying(false);
+      });
+      rzp.open();
+
+    } catch (error) {
+      console.error('Error initiating Razorpay payment:', error);
+      toast({
+        title: 'Payment Error',
+        description: (error as Error).message || 'Could not initiate payment. Please try again.',
+        variant: 'destructive',
+      });
+      setIsPaying(false);
+    }
+  };
+
+  // This is for the 'edit' mode or if not using Razorpay
   async function onSubmit(values: SubscriptionFormValues) {
     if (!user) {
       toast({ title: 'Error', description: 'You must be logged in.', variant: 'destructive' });
@@ -115,7 +282,7 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     }
     setIsLoading(true);
 
-    const subscriptionData = {
+    const subscriptionData: Partial<Subscription> = {
       userId: user.uid,
       name: values.name,
       amount: values.amount,
@@ -123,22 +290,21 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
       nextPaymentDate: values.nextPaymentDate.toISOString(),
       category: values.category || '',
       notes: values.notes || '',
-      // Add status: 'active' or similar later
+      updatedAt: new Date().toISOString(),
     };
 
-    // Placeholder for actual submission logic
-    console.log('Subscription data:', subscriptionData);
-
     try {
-      if (mode === 'add') {
-        // await addDoc(collection(db, 'users', user.uid, 'subscriptions'), subscriptionData); // Example
-        toast({ title: 'Subscription Added (Placeholder)', description: 'New subscription recorded successfully.' });
-      } else if (subscription) {
-        // const subRef = doc(db, 'users', user.uid, 'subscriptions', subscription.id); // Example
-        // await updateDoc(subRef, subscriptionData); // Example
-        toast({ title: 'Subscription Updated (Placeholder)', description: 'Subscription details saved.' });
+      if (mode === 'edit' && subscription) {
+        const subRef = doc(db, 'users', user.uid, 'subscriptions', subscription.id);
+        await updateDoc(subRef, subscriptionData);
+        toast({ title: 'Subscription Updated', description: 'Subscription details saved.' });
+        router.push('/subscriptions');
+      } else {
+        // This path should ideally not be hit for 'add' mode if Razorpay is primary.
+        // It can be a fallback or for non-payment related 'add' scenarios if any.
+        // For now, we assume 'add' mode uses Razorpay.
+        toast({ title: 'Info', description: 'Please use the "Pay with Razorpay" button to add new subscriptions.', variant: 'default' });
       }
-      router.push('/subscriptions'); // Navigate to subscriptions list page
     } catch (error) {
       console.error('Error saving subscription:', error);
       toast({
@@ -153,7 +319,10 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form 
+        onSubmit={mode === 'add' ? form.handleSubmit(initiateRazorpayPayment) : form.handleSubmit(onSubmit)} 
+        className="space-y-6"
+      >
         <FormField
           control={form.control}
           name="name"
@@ -176,7 +345,7 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
           name="amount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Amount per Cycle *</FormLabel>
+              <FormLabel>Amount per Cycle ({currencySymbol}) *</FormLabel>
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground sm:text-sm">{currencySymbol}</span>
                 <FormControl>
@@ -272,9 +441,16 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
           )}
         />
 
-        <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
-          {isLoading ? <LoadingSpinner size={20} /> : (mode === 'add' ? 'Add Subscription' : 'Save Changes')}
-        </Button>
+        {mode === 'add' ? (
+          <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isPaying || isLoading}>
+            {isPaying ? <LoadingSpinner size={20} className="mr-2" /> : <CreditCard className="mr-2 h-4 w-4" />}
+            {isPaying ? 'Processing...' : 'Proceed to Pay with Razorpay'}
+          </Button>
+        ) : (
+          <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isLoading}>
+            {isLoading ? <LoadingSpinner size={20} /> : 'Save Changes'}
+          </Button>
+        )}
       </form>
     </Form>
   );
