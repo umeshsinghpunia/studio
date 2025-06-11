@@ -84,13 +84,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, [user, loading, router]);
   
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateDateTime = () => {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const dateString = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
       const timezone = now.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2] || 'IN'; // Fallback
       setCurrentTime(`${timeString} | ${dateString} | ${timezone}`);
-    }, 1000);
+    };
+    updateDateTime(); // Set initial time
+    const timer = setInterval(updateDateTime, 1000); // Update every second
     return () => clearInterval(timer);
   }, []);
 
@@ -228,7 +230,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="ml-auto flex items-center gap-3 lg:gap-4">
             <div className="hidden lg:flex flex-col items-end">
-                <p className="text-xs text-muted-foreground">{currentTime.split('|')[0].trim()}</p>
+                <p className="text-xs text-muted-foreground">{currentTime.split('|')[0]?.trim()}</p>
                 <p className="text-xs text-muted-foreground">{currentTime.split('|')[1]?.trim()} | {currentTime.split('|')[2]?.trim()}</p>
             </div>
             <div className="relative hidden sm:block">
@@ -285,3 +287,4 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
