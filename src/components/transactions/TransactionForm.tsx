@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -186,6 +186,9 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
     }
   }
 
+  const currentCategoryId = form.watch('categoryId');
+  const selectedCategoryForDisplay = availableCategories.find(cat => cat.id === currentCategoryId);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -229,10 +232,17 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    {selectedCategoryForDisplay ? (
+                      <div className="flex items-center gap-2">
+                        {React.createElement(getLucideIcon(selectedCategoryForDisplay.icon), { className: "h-4 w-4 text-muted-foreground" })}
+                        {selectedCategoryForDisplay.name}
+                      </div>
+                    ) : (
+                      <SelectValue placeholder="Select a category" />
+                    )}
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -240,8 +250,8 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
                     const Icon = getLucideIcon(cat.icon);
                     return (
                        <SelectItem key={cat.id} value={cat.id}>
-                        <div className="flex items-center">
-                          <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-muted-foreground" />
                           {cat.name}
                         </div>
                       </SelectItem>
@@ -337,4 +347,3 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
     </Form>
   );
 }
-
