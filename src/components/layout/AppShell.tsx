@@ -11,8 +11,8 @@ import {
   UserCircle,
   LogOut,
   Menu,
-  X,
-  CreditCard,
+  CreditCard, // Added for Subscriptions
+  Receipt, // Added for Bills
   Settings,
   DollarSign
 } from 'lucide-react';
@@ -39,6 +39,8 @@ import { appConfig } from '@/config/app';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/transactions', label: 'Transactions', icon: ListChecks },
+  { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { href: '/bills', label: 'Bills', icon: Receipt },
   { href: '/profile', label: 'Profile', icon: UserCircle },
 ];
 
@@ -77,7 +79,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const getInitials = (name: string | null | undefined): string => {
     if (name && name.trim() !== '') {
-      return name.trim()[0].toUpperCase();
+      // Use only the first character as per previous request
+      return name.trim()[0].toUpperCase(); 
     }
     return appConfig.defaultAvatarFallback;
   };
@@ -88,7 +91,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       onClick={() => isMobile && setMobileMenuOpen(false)}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-        pathname === href ? "bg-accent text-primary" : "text-muted-foreground",
+        pathname === href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:text-sidebar-primary",
         isMobile ? "text-lg" : "text-sm font-medium"
       )}
     >
@@ -100,10 +103,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-card md:block">
+      <div className="hidden border-r bg-sidebar md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <div className="flex h-14 items-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
+            <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
               <Image src="/logo.svg" alt={`${appConfig.appName} Logo`} width={32} height={32} />
               <span className="font-headline text-xl">{appConfig.appName}</span>
             </Link>
@@ -134,11 +137,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
+            <SheetContent side="left" className="flex flex-col bg-sidebar text-sidebar-foreground border-sidebar-border">
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-2 text-lg font-semibold mb-4"
+                  className="flex items-center gap-2 text-lg font-semibold mb-4 text-sidebar-foreground"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Image src="/logo.svg" alt={`${appConfig.appName} Logo`} width={28} height={28} />
@@ -157,7 +160,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                   <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
