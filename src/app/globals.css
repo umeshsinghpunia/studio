@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,48 +60,48 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .dark {
-    --background: 210 15% 12%; /* Very dark, slightly cool desaturated blue */
-    --foreground: 210 15% 85%; /* Light gray, soft white */
+    --background: 315 49% 21%; /* Dark Purple from 511D43 */
+    --foreground: 210 15% 85%; /* Light gray for text */
 
-    --card: 210 15% 18%; /* Darker gray-blue */
+    --card: 315 45% 25%; /* Slightly lighter purple than background */
     --card-foreground: 210 15% 85%;
 
-    --popover: 210 15% 15%; /* Slightly darker than card for popovers */
+    --popover: 315 45% 23%; /* Similar to card, slightly adjusted */
     --popover-foreground: 210 15% 85%;
 
-    --primary: 200 50% 55%; /* Muted Sky Blue */
-    --primary-foreground: 200 15% 10%; /* Very dark for text on primary */
+    --primary: 342 65% 34%; /* Magenta/Purple from 901E3E */
+    --primary-foreground: 342 20% 95%; /* Very light pinkish-gray for text on primary */
 
-    --secondary: 200 40% 35%; /* Darker Muted Blue */
-    --secondary-foreground: 200 15% 80%; /* Lighter text for secondary */
+    --secondary: 342 50% 28%; /* Darker, less saturated version of primary */
+    --secondary-foreground: 210 15% 80%; /* Lighter text for secondary */
 
-    --muted: 210 15% 22%; /* Dark gray */
-    --muted-foreground: 210 15% 60%; /* Medium-light gray */
+    --muted: 210 15% 28%; /* Neutral dark gray, slightly lighter to contrast new bg */
+    --muted-foreground: 210 15% 65%; /* Medium-light gray for muted text */
 
-    --accent: 30 70% 60%; /* Muted Peach */
-    --accent-foreground: 30 30% 15%; /* Very dark text for accent */
+    --accent: 125 19% 68%; /* Light Muted Green from 9BC09C */
+    --accent-foreground: 125 25% 15%; /* Dark green for text on light green accent */
 
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 50%; /* Bright Red from DC2525 */
+    --destructive-foreground: 0 0% 98%; /* Light text for destructive actions */
 
-    --border: 210 15% 25%; /* Softer border for dark mode */
-    --input: 210 15% 20%; /* Dark input background */
-    --ring: 200 50% 55%; /* Muted Sky Blue for focus rings */
+    --border: 315 40% 30%; /* Subtle border, lighter than background */
+    --input: 315 45% 28%; /* Dark input background, similar to card */
+    --ring: 342 65% 34%; /* New primary color for focus rings */
     
-    --chart-1: 200 50% 55%; /* Muted Sky Blue Dark */
-    --chart-2: 30 70% 60%;  /* Muted Peach Dark */
-    --chart-3: 150 40% 55%; /* Muted Mint Green Dark */
-    --chart-4: 270 40% 65%; /* Muted Lavender Dark */
-    --chart-5: 50 50% 60%;  /* Muted Butter Yellow Dark */
+    --chart-1: 342 65% 34%; /* New Primary - Magenta/Purple */
+    --chart-2: 125 19% 68%; /* New Accent - Light Muted Green */
+    --chart-3: 200 50% 55%; /* Muted Sky Blue (contrast) */
+    --chart-4: 30 70% 60%;  /* Muted Peach (contrast) */
+    --chart-5: 50 50% 60%;  /* Muted Butter Yellow (contrast) */
 
-    --sidebar-background: 210 15% 15%;
-    --sidebar-foreground: 210 15% 85%;
-    --sidebar-primary: 200 50% 55%;
-    --sidebar-primary-foreground: 200 15% 10%;
-    --sidebar-accent: 210 15% 22%;
-    --sidebar-accent-foreground: 200 50% 55%;
-    --sidebar-border: 210 15% 25%;
-    --sidebar-ring: 200 50% 55%;
+    --sidebar-background: 315 49% 19%; /* Slightly darker shade of main background */
+    --sidebar-foreground: 210 15% 85%; /* Main light text for sidebar */
+    --sidebar-primary: 342 65% 34%; /* Main primary, for icons/highlights in sidebar */
+    --sidebar-primary-foreground: 342 20% 95%; /* Text on sidebar-primary */
+    --sidebar-accent: 315 45% 25%; /* Active/hover nav item background (like card bg) */
+    --sidebar-accent-foreground: 125 19% 68%; /* Text on active/hover nav item (new main accent) */
+    --sidebar-border: 315 40% 28%; /* Border for sidebar elements */
+    --sidebar-ring: 342 65% 34%; /* Main primary for focus rings in sidebar */
   }
 }
 
