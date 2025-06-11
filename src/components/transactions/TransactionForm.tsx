@@ -40,6 +40,7 @@ import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'fir
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getLucideIcon } from '@/lib/icons';
 import { appConfig } from '@/config/app';
+import { getCountryByCode } from '@/lib/countries';
 
 const transactionFormSchema = z.object({
   type: z.enum(['income', 'expense'], { required_error: 'Please select a transaction type.' }),
@@ -73,8 +74,19 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data() as AppUser;
-          if (userData.country && userData.country.currencySymbol) {
-            setCurrencySymbol(userData.country.currencySymbol);
+          if (userData.country) {
+            if (userData.country.currencySymbol) {
+              setCurrencySymbol(userData.country.currencySymbol);
+            } else if (userData.country.code) {
+              const countryFromList = getCountryByCode(userData.country.code);
+              if (countryFromList && countryFromList.currencySymbol) {
+                setCurrencySymbol(countryFromList.currencySymbol);
+              } else {
+                setCurrencySymbol(appConfig.defaultCurrencySymbol);
+              }
+            } else {
+              setCurrencySymbol(appConfig.defaultCurrencySymbol);
+            }
           } else {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }

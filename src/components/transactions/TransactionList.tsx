@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import LoadingSpinner from '../LoadingSpinner';
 import { appConfig } from '@/config/app';
+import { getCountryByCode } from '@/lib/countries';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -46,8 +47,19 @@ export default function TransactionList({ transactions }: TransactionListProps) 
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data() as AppUser;
-          if (userData.country && userData.country.currencySymbol) {
-            setCurrencySymbol(userData.country.currencySymbol);
+          if (userData.country) {
+            if (userData.country.currencySymbol) {
+              setCurrencySymbol(userData.country.currencySymbol);
+            } else if (userData.country.code) {
+              const countryFromList = getCountryByCode(userData.country.code);
+              if (countryFromList && countryFromList.currencySymbol) {
+                setCurrencySymbol(countryFromList.currencySymbol);
+              } else {
+                setCurrencySymbol(appConfig.defaultCurrencySymbol);
+              }
+            } else {
+              setCurrencySymbol(appConfig.defaultCurrencySymbol);
+            }
           } else {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }

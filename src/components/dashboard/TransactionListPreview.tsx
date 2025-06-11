@@ -15,6 +15,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
 import { appConfig } from '@/config/app';
+import { getCountryByCode } from '@/lib/countries';
 
 
 interface TransactionListPreviewProps {
@@ -32,8 +33,19 @@ export default function TransactionListPreview({ transactions }: TransactionList
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data() as AppUser;
-          if (userData.country && userData.country.currencySymbol) {
-            setCurrencySymbol(userData.country.currencySymbol);
+          if (userData.country) {
+            if (userData.country.currencySymbol) {
+              setCurrencySymbol(userData.country.currencySymbol);
+            } else if (userData.country.code) {
+              const countryFromList = getCountryByCode(userData.country.code);
+              if (countryFromList && countryFromList.currencySymbol) {
+                setCurrencySymbol(countryFromList.currencySymbol);
+              } else {
+                setCurrencySymbol(appConfig.defaultCurrencySymbol);
+              }
+            } else {
+              setCurrencySymbol(appConfig.defaultCurrencySymbol);
+            }
           } else {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
