@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
+import { appConfig } from '@/config/app';
 
 
 interface TransactionListPreviewProps {
@@ -22,7 +23,7 @@ interface TransactionListPreviewProps {
 
 export default function TransactionListPreview({ transactions }: TransactionListPreviewProps) {
   const { user: firebaseUser } = useAuth();
-  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
 
   useEffect(() => {
     if (firebaseUser) {
@@ -33,10 +34,16 @@ export default function TransactionListPreview({ transactions }: TransactionList
           const userData = userDoc.data() as AppUser;
           if (userData.country && userData.country.currencySymbol) {
             setCurrencySymbol(userData.country.currencySymbol);
+          } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
+        } else {
+          setCurrencySymbol(appConfig.defaultCurrencySymbol);
         }
       };
       fetchUserProfile();
+    } else {
+      setCurrencySymbol(appConfig.defaultCurrencySymbol);
     }
   }, [firebaseUser]);
 
@@ -91,3 +98,4 @@ export default function TransactionListPreview({ transactions }: TransactionList
     </div>
   );
 }
+

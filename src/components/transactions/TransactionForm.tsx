@@ -39,7 +39,7 @@ import { db } from '@/lib/firebase/config';
 import { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getLucideIcon } from '@/lib/icons';
-import CountrySelector from '../shared/CountrySelector'; // For currency symbol
+import { appConfig } from '@/config/app';
 
 const transactionFormSchema = z.object({
   type: z.enum(['income', 'expense'], { required_error: 'Please select a transaction type.' }),
@@ -63,7 +63,7 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState<TransactionType>(transaction?.type || 'expense');
   const [availableCategories, setAvailableCategories] = useState<Category[]>(TransactionCategories[selectedType]);
-  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
 
 
   useEffect(() => {
@@ -75,10 +75,16 @@ export default function TransactionForm({ mode, transaction }: TransactionFormPr
           const userData = userDoc.data() as AppUser;
           if (userData.country && userData.country.currencySymbol) {
             setCurrencySymbol(userData.country.currencySymbol);
+          } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
+        } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol);
         }
       };
       fetchUserProfile();
+    } else {
+        setCurrencySymbol(appConfig.defaultCurrencySymbol);
     }
   }, [user]);
 

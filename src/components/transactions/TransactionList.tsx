@@ -25,6 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import LoadingSpinner from '../LoadingSpinner';
+import { appConfig } from '@/config/app';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -33,7 +34,7 @@ interface TransactionListProps {
 export default function TransactionList({ transactions }: TransactionListProps) {
   const { user: firebaseUser } = useAuth();
   const { toast } = useToast();
-  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -47,10 +48,16 @@ export default function TransactionList({ transactions }: TransactionListProps) 
           const userData = userDoc.data() as AppUser;
           if (userData.country && userData.country.currencySymbol) {
             setCurrencySymbol(userData.country.currencySymbol);
+          } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
+        } else {
+          setCurrencySymbol(appConfig.defaultCurrencySymbol);
         }
       };
       fetchUserProfile();
+    } else {
+      setCurrencySymbol(appConfig.defaultCurrencySymbol);
     }
   }, [firebaseUser]);
 

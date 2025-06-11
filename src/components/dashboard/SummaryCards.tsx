@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
+import { appConfig } from '@/config/app';
 
 
 interface SummaryCardsProps {
@@ -19,7 +20,7 @@ interface SummaryCardsProps {
 
 export default function SummaryCards({ totalIncome, totalExpenses, balance }: SummaryCardsProps) {
   const { user: firebaseUser } = useAuth();
-  const [currencySymbol, setCurrencySymbol] = useState('$'); // Default symbol
+  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
 
   useEffect(() => {
     if (firebaseUser) {
@@ -30,10 +31,16 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance }: Su
           const userData = userDoc.data() as AppUser;
           if (userData.country && userData.country.currencySymbol) {
             setCurrencySymbol(userData.country.currencySymbol);
+          } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol); // Fallback if country is set but symbol is not
           }
+        } else {
+           setCurrencySymbol(appConfig.defaultCurrencySymbol); // Fallback if user profile doesn't exist
         }
       };
       fetchUserProfile();
+    } else {
+        setCurrencySymbol(appConfig.defaultCurrencySymbol); // Fallback if no user
     }
   }, [firebaseUser]);
   
@@ -62,3 +69,4 @@ export default function SummaryCards({ totalIncome, totalExpenses, balance }: Su
     </div>
   );
 }
+

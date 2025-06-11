@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { AppUser } from '@/types';
+import { appConfig } from '@/config/app';
 
 interface SpendingChartProps {
   transactions: Transaction[];
@@ -70,7 +71,7 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
   const { theme } = useTheme();
   const { user: firebaseUser } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
 
   useEffect(() => {
     if (firebaseUser) {
@@ -81,10 +82,16 @@ export default function SpendingChart({ transactions }: SpendingChartProps) {
           const userData = userDoc.data() as AppUser;
           if (userData.country && userData.country.currencySymbol) {
             setCurrencySymbol(userData.country.currencySymbol);
+          } else {
+            setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
+        } else {
+          setCurrencySymbol(appConfig.defaultCurrencySymbol);
         }
       };
       fetchUserProfile();
+    } else {
+      setCurrencySymbol(appConfig.defaultCurrencySymbol);
     }
   }, [firebaseUser]);
 
