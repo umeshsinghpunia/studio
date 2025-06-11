@@ -4,13 +4,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/config';
-import { collection, query, where, onSnapshot, orderBy, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, getDocs, Timestamp, doc } from 'firebase/firestore';
 import type { Transaction } from '@/types';
 // import SummaryCards from '@/components/dashboard/SummaryCards'; // To be replaced
 import SpendingChart from '@/components/dashboard/SpendingChart';
 import TransactionListPreview from '@/components/dashboard/TransactionListPreview';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PlusCircle, AlertTriangle, MoreHorizontal, Banknote, TrendingDown as TrendingDownIcon, TrendingUp as TrendingUpIcon, Target, CreditCard, ListFilter, CalendarDays } from 'lucide-react'; // Renamed to avoid conflict
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -100,9 +101,10 @@ export default function DashboardPage() {
     if (user) {
       const fetchUserProfile = async () => {
         const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid))); // Querying by UID
-        if (!userDoc.empty) {
-          const userData = userDoc.docs[0].data() as AppUser;
+        // const userDoc = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid))); // Querying by UID
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data() as AppUser;
           setUserProfile(userData);
           if (userData.country) {
              const countryDetails = getCountryByCode(userData.country.code);
@@ -111,7 +113,9 @@ export default function DashboardPage() {
             setCurrencySymbol(appConfig.defaultCurrencySymbol);
           }
         } else {
+          // User profile doesn't exist, maybe set default or handle as needed
           setCurrencySymbol(appConfig.defaultCurrencySymbol);
+          console.log("User profile document does not exist for UID:", user.uid);
         }
       };
       fetchUserProfile();
@@ -317,11 +321,11 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-1">
-                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32/E50914/FFFFFF.png?text=N" />
-                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32/1DB954/FFFFFF.png?text=S" />
-                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32/F24E1E/FFFFFF.png?text=F" />
-                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32/007BFF/FFFFFF.png?text=W" />
-                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32/FFD700/000000.png?text=E" />
+                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo netflix" />
+                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo spotify" />
+                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo figma" />
+                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo wifi" />
+                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo electricity" />
                 </div>
             </CardContent>
         </Card>
