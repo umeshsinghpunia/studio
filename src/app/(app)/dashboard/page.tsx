@@ -100,7 +100,7 @@ export default function DashboardPage() {
       />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
+        <Card className="md:col-span-2 lg:col-span-7">
           <CardHeader>
             <CardTitle className="font-headline">Monthly Spending</CardTitle>
           </CardHeader>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-         <Card className="lg:col-span-3">
+         <Card className="md:col-span-2 lg:col-span-7">
           <CardHeader>
             <CardTitle className="font-headline">Recent Transactions</CardTitle>
           </CardHeader>
