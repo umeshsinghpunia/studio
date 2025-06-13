@@ -7,17 +7,18 @@ import { useTheme } from 'next-themes';
 import { useMemo, useState, useEffect } from 'react';
 import { CardDescription } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from '@/contexts/AuthContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-import type { AppUser } from '@/types';
-import { appConfig } from '@/config/app';
-import { getCountryByCode } from '@/lib/countries';
+// import { useAuth } from '@/contexts/AuthContext'; // Removed
+// import { doc, getDoc } from 'firebase/firestore'; // Removed
+// import { db } from '@/lib/firebase/config'; // Removed
+// import type { AppUser } from '@/types'; // Removed
+// import { appConfig } from '@/config/app'; // Removed
+// import { getCountryByCode } from '@/lib/countries'; // Removed
 import { formatCurrency } from '@/lib/utils';
 
 interface SpendingChartProps {
   transactions: Transaction[];
-  chartType: 'bar' | 'pie'; // To select which chart section to render primarily
+  chartType: 'bar' | 'pie';
+  currencySymbol: string; // Added currencySymbol prop
 }
 
 const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(20, 80%, 60%)', 'hsl(160, 70%, 50%)'];
@@ -72,36 +73,10 @@ const renderActiveShape = (props: any, currencySymbol: string) => {
 };
 
 
-export default function SpendingChart({ transactions, chartType }: SpendingChartProps) {
+export default function SpendingChart({ transactions, chartType, currencySymbol }: SpendingChartProps) {
   const { theme } = useTheme();
-  const { user: firebaseUser } = useAuth();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [currencySymbol, setCurrencySymbol] = useState(appConfig.defaultCurrencySymbol);
-  const [trendChartType, setTrendChartType] = useState<'bar' | 'line' | 'area'>('bar');
-  // const [categoryChartType, setCategoryChartType] = useState<'pie' | 'donut'>('pie'); // Dribbble shows pie/donut, not selector
-
-  useEffect(() => {
-    if (firebaseUser) {
-      const fetchUserProfile = async () => {
-        const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as AppUser;
-          if (userData.country) {
-            const countryDetails = getCountryByCode(userData.country.code);
-            setCurrencySymbol(countryDetails?.currencySymbol || appConfig.defaultCurrencySymbol);
-          } else {
-            setCurrencySymbol(appConfig.defaultCurrencySymbol);
-          }
-        } else {
-          setCurrencySymbol(appConfig.defaultCurrencySymbol);
-        }
-      };
-      fetchUserProfile();
-    } else {
-      setCurrencySymbol(appConfig.defaultCurrencySymbol);
-    }
-  }, [firebaseUser]);
+  // Removed internal currencySymbol state and useEffect
 
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
@@ -134,16 +109,20 @@ export default function SpendingChart({ transactions, chartType }: SpendingChart
     const expensesByCategory: { [key: string]: { name: string, value: number, icon?: string, fill: string } } = {};
     transactions
       .filter(t => t.type === 'expense')
-      .forEach((t, index) => {
+      .forEach((t) => {
         const categoryName = t.category.name;
-        expensesByCategory[categoryName] = {
-          name: categoryName,
-          value: (expensesByCategory[categoryName]?.value || 0) + t.amount,
-          icon: t.category.icon,
-          fill: PIE_CHART_COLORS[Object.keys(expensesByCategory).length % PIE_CHART_COLORS.length] // Assign color here
-        };
+        const colorIndex = Object.keys(expensesByCategory).length % PIE_CHART_COLORS.length;
+        if (!expensesByCategory[categoryName]) {
+            expensesByCategory[categoryName] = {
+                name: categoryName,
+                value: 0,
+                icon: t.category.icon,
+                fill: PIE_CHART_COLORS[colorIndex]
+            };
+        }
+        expensesByCategory[categoryName].value += t.amount;
       });
-    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value).slice(0, 6); // Show top 6 categories for clarity
+    return Object.values(expensesByCategory).sort((a,b) => b.value - a.value).slice(0, 6); 
   }, [transactions]);
 
   const totalCategorySpending = useMemo(() => {
@@ -161,17 +140,17 @@ export default function SpendingChart({ transactions, chartType }: SpendingChart
 
   const barChartContainerProps = {
     width: "100%",
-    height: 280, // Adjusted height for Dribbble design
+    height: 280, 
   };
   
   const pieChartContainerProps = {
       width: "100%",
-      height: 200, // Adjusted for Dribbble design with list
+      height: 200, 
   };
 
   const commonCartesianProps = {
     data: monthlySpendingData,
-    margin: { top: 5, right: 5, left: -25, bottom: 0 }, // Adjusted margins
+    margin: { top: 5, right: 5, left: -25, bottom: 0 }, 
   };
   
   const commonTooltipProps = {
@@ -198,7 +177,6 @@ export default function SpendingChart({ transactions, chartType }: SpendingChart
           <XAxis dataKey="name" stroke={tickColor} fontSize={10} tickLine={false} axisLine={{stroke: popoverBorderColor, strokeWidth: 0.5}} dy={5}/>
           <YAxis stroke={tickColor} fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${currencySymbol}${value/1000}k`} />
           <Tooltip {...commonTooltipProps} />
-          {/* <Legend wrapperStyle={{ fontSize: '12px', color: tickColor }} /> */}
           <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
         </BarChart>
       </ResponsiveContainer>
@@ -219,9 +197,8 @@ export default function SpendingChart({ transactions, chartType }: SpendingChart
                 data={categorySpendingData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50} // For Donut
+                innerRadius={50} 
                 outerRadius={75}
-                fill="hsl(var(--primary))" 
                 dataKey="value"
                 onMouseEnter={onPieEnter}
                 paddingAngle={2}
@@ -257,5 +234,5 @@ export default function SpendingChart({ transactions, chartType }: SpendingChart
     );
   }
   
-  return null; // Should not reach here
+  return null; 
 }

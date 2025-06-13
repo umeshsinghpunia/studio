@@ -113,10 +113,10 @@ const GoalCard = ({ goal, currencySymbol, isLoading }: { goal: FinancialGoal | n
 };
 
 
-const BillSubscriptionItem = ({ name, date, amount, iconUrl, currencySymbol }: { name: string, date: string, amount: number, iconUrl?: string, currencySymbol: string }) => (
+const BillSubscriptionItem = ({ name, date, amount, iconUrl, currencySymbol, dataAiHint }: { name: string, date: string, amount: number, iconUrl?: string, currencySymbol: string, dataAiHint?: string }) => (
     <div className="flex items-center justify-between py-2">
         <div className="flex items-center gap-3">
-            {iconUrl ? <Image src={iconUrl} alt={name} width={32} height={32} className="rounded-full" data-ai-hint="logo company" /> : <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center"><CreditCard className="h-4 w-4 text-muted-foreground"/></div> }
+            {iconUrl ? <Image src={iconUrl} alt={name} width={32} height={32} className="rounded-full" data-ai-hint={dataAiHint || "logo company"} /> : <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center"><CreditCard className="h-4 w-4 text-muted-foreground"/></div> }
             <div>
                 <p className="text-sm font-medium text-foreground">{name}</p>
                 <p className="text-xs text-muted-foreground">{date}</p>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
              const countryDetails = getCountryByCode(userData.country.code);
              if (countryDetails?.currencySymbol) {
                 setCurrencySymbol(countryDetails.currencySymbol);
-             } else if (userData.country.currencySymbol) {
+             } else if (userData.country.currencySymbol) { // Check this if 'P' is coming from direct user data
                 setCurrencySymbol(userData.country.currencySymbol);
              } else {
                 setCurrencySymbol(appConfig.defaultCurrencySymbol);
@@ -260,9 +260,9 @@ export default function DashboardPage() {
   
   const recentTransactions = transactions.slice(0, 5);
 
-  const overallLoading = loadingTransactions || loadingInvestments || loadingGoal; // Consolidate initial loading for main spinner
+  const overallLoading = loadingTransactions || loadingInvestments || loadingGoal; 
 
-  if (overallLoading && transactions.length === 0) { // Show main spinner only if no transactions loaded yet
+  if (overallLoading && transactions.length === 0) { 
     return (
       <div className="flex flex-1 items-center justify-center">
         <LoadingSpinner size={32} />
@@ -314,7 +314,6 @@ export default function DashboardPage() {
             icon={Briefcase} 
             currencySymbol={currencySymbol}
             trend="up"
-            // trendText="Invest Amount ₹100,000.00" // This trend text is hard to make dynamic without more data
             bgColorClass="bg-indigo-500/10"
             iconColorClass="text-indigo-600"
             isLoading={loadingInvestments}
@@ -326,7 +325,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1"> {/* Full width for Monthly Spending */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1">
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Monthly Expenses</CardTitle>
@@ -345,7 +344,7 @@ export default function DashboardPage() {
             {loadingTransactions && transactions.length === 0 ? (
                  <div className="h-[280px] flex items-center justify-center"><LoadingSpinner/></div>
             ) : transactions.filter(t => t.type === 'expense').length > 0 ? (
-              <SpendingChart transactions={transactions} chartType="bar" />
+              <SpendingChart transactions={transactions} chartType="bar" currencySymbol={currencySymbol} />
             ) : (
               <p className="text-muted-foreground text-center py-8">No spending data available yet.</p>
             )}
@@ -353,8 +352,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5"> {/* Top Category and Bill & Subscriptions */}
-         <Card className="lg:col-span-3 shadow-card"> {/* Changed from lg:col-span-2 to lg:col-span-3 */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+         <Card className="lg:col-span-3 shadow-card"> 
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Top Category</CardTitle>
              <div className="flex items-center gap-2">
@@ -371,7 +370,7 @@ export default function DashboardPage() {
              {loadingTransactions && transactions.length === 0 ? (
                 <div className="h-[200px] flex items-center justify-center"><LoadingSpinner/></div>
              ) : transactions.filter(t => t.type === 'expense').length > 0 ? (
-                <SpendingChart transactions={transactions} chartType="pie" />
+                <SpendingChart transactions={transactions} chartType="pie" currencySymbol={currencySymbol} />
               ) : (
                 <p className="text-muted-foreground text-center py-8">No category data available.</p>
               )}
@@ -379,7 +378,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         
-        <Card className="lg:col-span-2 shadow-card"> {/* Changed from lg:col-span-3 to lg:col-span-2 */}
+        <Card className="lg:col-span-2 shadow-card"> 
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="font-headline text-lg">Bill & Subscription</CardTitle>
                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
@@ -388,17 +387,17 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
                 <div className="space-y-1">
-                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo netflix" />
-                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo spotify" />
-                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo figma" />
-                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo wifi" />
-                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" data-ai-hint="logo electricity" />
+                    <BillSubscriptionItem name="Netflix" date="15 June 2025" amount={149} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" dataAiHint="logo netflix" />
+                    <BillSubscriptionItem name="Spotify" date="24 Aug 2025" amount={49} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" dataAiHint="logo spotify" />
+                    <BillSubscriptionItem name="Figma" date="01 Jan 2026" amount={3999} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" dataAiHint="logo figma" />
+                    <BillSubscriptionItem name="WIFI" date="11 June 2025" amount={399} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" dataAiHint="logo wifi" />
+                    <BillSubscriptionItem name="Electricity" date="31 June 2025" amount={1265} currencySymbol={currencySymbol} iconUrl="https://placehold.co/32x32.png" dataAiHint="logo electricity" />
                 </div>
             </CardContent>
         </Card>
       </div>
 
-       <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1"> {/* Full width for Recent Expenses */}
+       <div className="grid grid-cols-1 gap-6 md:grid-cols-1 lg:grid-cols-1"> 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-headline text-lg">Recent Expenses</CardTitle>
@@ -416,7 +415,7 @@ export default function DashboardPage() {
                 </Button>
             </div>
           </CardHeader>
-          <CardContent className="!p-0">
+          <CardContent className="p-0">
             {loadingTransactions && transactions.length === 0 ? (
                  <div className="h-[150px] flex items-center justify-center"><LoadingSpinner/></div>
             ) : (
@@ -435,7 +434,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
