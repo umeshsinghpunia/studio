@@ -131,6 +131,25 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     },
   });
 
+  const createDueSoonNotification = async (subscriptionName: string, paymentDate: Date) => {
+    if (!user) return;
+
+    try {
+      const notificationsRef = collection(db, 'users', user.uid, 'notifications');
+      await addDoc(notificationsRef, {
+        title: 'Subscription Due Soon',
+        message: `Your "${subscriptionName}" subscription payment is due on ${format(paymentDate, 'PP')}.`,
+        timestamp: serverTimestamp(),
+        read: false,
+        type: 'payment',
+        link: '/subscriptions'
+      });
+    } catch (error) {
+      console.error("Error creating due soon notification:", error);
+      // Optionally toast a silent error or log, as this is a secondary action
+    }
+  };
+
   const handleRazorpaySuccess = async (
     razorpayResponse: {
       razorpay_payment_id: string;
@@ -145,21 +164,8 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
       return;
     }
 
-    setIsLoading(true); // Use general loading for Firestore op
+    setIsLoading(true);
     try {
-      // STUB: Backend call to verify payment and save subscription
-      // Replace with your actual backend API call
-      // const verificationResponse = await fetch('/api/razorpay/verify-payment', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...razorpayResponse, ...originalFormValues, userId: user.uid }),
-      // });
-      // if (!verificationResponse.ok) throw new Error('Payment verification failed.');
-      // const verificationData = await verificationResponse.json();
-
-      // For prototype: directly save to Firestore after mock verification
-      console.log('Razorpay success, proceed to save:', razorpayResponse, originalFormValues);
-
       const subscriptionDataToSave = {
         userId: user.uid,
         name: originalFormValues.name,
@@ -171,7 +177,6 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
         status: 'active' as SubscriptionStatus,
         razorpayOrderId: razorpayResponse.razorpay_order_id,
         razorpayPaymentId: razorpayResponse.razorpay_payment_id,
-        // razorpaySubscriptionId: if using Razorpay Subscriptions API for recurring
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -179,6 +184,18 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
       await addDoc(collection(db, 'users', user.uid, 'subscriptions'), subscriptionDataToSave);
 
       toast({ title: 'Subscription Added', description: 'New subscription active and payment successful.' });
+      
+      // Check for due soon notification
+      const sevenDaysFromNow = new Date();
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      const nextPaymentDateObj = new Date(subscriptionDataToSave.nextPaymentDate);
+      const today = new Date();
+      today.setHours(0,0,0,0); // Compare dates only
+
+      if (nextPaymentDateObj <= sevenDaysFromNow && nextPaymentDateObj >= today) {
+        await createDueSoonNotification(subscriptionDataToSave.name, nextPaymentDateObj);
+      }
+
       router.push('/subscriptions');
 
     } catch (error) {
@@ -201,7 +218,7 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
       return;
     }
     setIsPaying(true);
-    setFormValuesForPayment(values); // Store form values for success handler
+    setFormValuesForPayment(values); 
 
     const scriptLoaded = await loadRazorpayScript();
     if (!scriptLoaded || !window.Razorpay) {
@@ -211,25 +228,10 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     }
 
     try {
-      // STUB: Backend call to create Razorpay order
-      // Replace with your actual backend API call
-      // const orderResponse = await fetch('/api/razorpay/create-order', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ amount: values.amount * 100, currency: 'INR' }) // amount in paise
-      // });
-      // if (!orderResponse.ok) throw new Error('Failed to create Razorpay order.');
-      // const orderData = await orderResponse.json();
-      // const orderId = orderData.id;
-
-      // For prototype: Use a placeholder order_id or simulate order creation
-      const orderId = `order_prototype_${Date.now()}`; // Placeholder
-      console.log("Simulated Razorpay Order ID:", orderId, "Amount (Paise):", values.amount * 100);
-
-
+      const orderId = `order_prototype_${Date.now()}`;
       const options = {
         key: RAZORPAY_KEY_ID_PLACEHOLDER,
-        amount: values.amount * 100, // Amount in paise
+        amount: values.amount * 100, 
         currency: "INR",
         name: values.name,
         description: `Payment for ${values.name} subscription`,
@@ -240,14 +242,14 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
         prefill: {
           name: user.displayName || "Valued Customer",
           email: user.email || "",
-          contact: "" // Can fetch from user profile if available
+          contact: "" 
         },
         notes: {
           subscription_name: values.name,
           user_id: user.uid,
         },
         theme: {
-          color: "#73B9BC" // Use primary color from your theme
+          color: "#73B9BC" 
         }
       };
 
@@ -274,7 +276,6 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     }
   };
 
-  // This is for the 'edit' mode or if not using Razorpay
   async function onSubmit(values: SubscriptionFormValues) {
     if (!user) {
       toast({ title: 'Error', description: 'You must be logged in.', variant: 'destructive' });
@@ -298,11 +299,20 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
         const subRef = doc(db, 'users', user.uid, 'subscriptions', subscription.id);
         await updateDoc(subRef, subscriptionData);
         toast({ title: 'Subscription Updated', description: 'Subscription details saved.' });
+
+        // Check for due soon notification on edit
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+        const nextPaymentDateObj = new Date(values.nextPaymentDate);
+        const today = new Date();
+        today.setHours(0,0,0,0); // Compare dates only
+
+        if (nextPaymentDateObj <= sevenDaysFromNow && nextPaymentDateObj >= today) {
+            await createDueSoonNotification(values.name, nextPaymentDateObj);
+        }
         router.push('/subscriptions');
+
       } else {
-        // This path should ideally not be hit for 'add' mode if Razorpay is primary.
-        // It can be a fallback or for non-payment related 'add' scenarios if any.
-        // For now, we assume 'add' mode uses Razorpay.
         toast({ title: 'Info', description: 'Please use the "Pay with Razorpay" button to add new subscriptions.', variant: 'default' });
       }
     } catch (error) {
@@ -455,3 +465,6 @@ export default function SubscriptionForm({ mode, subscription }: SubscriptionFor
     </Form>
   );
 }
+
+
+    
