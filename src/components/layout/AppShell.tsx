@@ -64,7 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
     { href: '/transactions', label: 'All Expenses', icon: ListChecks, disabled: false },
     { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false },
-    { href: '#', label: 'Investment', icon: Briefcase, disabled: !isProUser },
+    { href: '/investment', label: 'Investment', icon: Briefcase, disabled: !isProUser },
     { href: '#', label: 'Card', icon: ShieldCheck, disabled: !isProUser },
     { href: '#', label: 'Goals', icon: Target, disabled: !isProUser },
   ], [isProUser]);
