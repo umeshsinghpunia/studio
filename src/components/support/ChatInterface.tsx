@@ -62,7 +62,7 @@ export default function ChatInterface() {
     const messageData = {
       senderId: user.uid,
       senderName: user.displayName || user.email || 'Anonymous User',
-      avatarUrl: user.photoURL || undefined,
+      avatarUrl: user.photoURL || null, // Ensure null if photoURL is falsy
       text: newMessage.trim(),
       timestamp: serverTimestamp(),
     };
