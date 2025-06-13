@@ -24,7 +24,9 @@ import {
   LifeBuoy,
   MoreHorizontal,
   Bell,
-  Search
+  Search,
+  Package, // Example icon for notifications
+  AlertCircle, // Example icon for notifications
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 
@@ -276,14 +278,48 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 className="pl-8 sm:w-[250px] md:w-[200px] lg:w-[300px] h-9 rounded-md !bg-background"
               />
             </div>
-             <Button variant="ghost" size="icon" className="rounded-full relative text-muted-foreground hover:text-primary">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                </span>
-                <span className="sr-only">Notifications</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full relative text-muted-foreground hover:text-primary">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-1 right-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                    </span>
+                    <span className="sr-only">Notifications</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="flex items-start gap-2">
+                  <Package className="text-blue-500 mt-1" />
+                  <div>
+                    <p className="font-medium">New Order Placed</p>
+                    <p className="text-xs text-muted-foreground">Your order #12345 has been successfully placed.</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-start gap-2">
+                  <AlertCircle className="text-yellow-500 mt-1" />
+                   <div>
+                    <p className="font-medium">Subscription Ending Soon</p>
+                    <p className="text-xs text-muted-foreground">Your Pro plan will expire in 3 days.</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-start gap-2">
+                  <Receipt className="text-green-500 mt-1" />
+                   <div>
+                    <p className="font-medium">Bill Paid: Electricity</p>
+                    <p className="text-xs text-muted-foreground">Your electricity bill of $75 has been paid.</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="justify-center text-sm text-primary hover:!text-primary">
+                  View All Notifications
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
