@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/config';
-import { collection, query, onSnapshot, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, doc, deleteDoc, getDoc } from 'firebase/firestore';
 import type { FinancialGoal } from '@/types';
 import GoalItem from '@/components/goals/GoalItem';
 import {
