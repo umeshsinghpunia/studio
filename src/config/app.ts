@@ -8,7 +8,7 @@ export interface AppConfig {
 }
 
 export const appConfig: AppConfig = {
-  appName: 'Expense Tracker',
+  appName: 'ET',
   appDescription: 'Modern expense tracker app to manage your income and expenses efficiently.',
   appTagline: 'Track your expenses wisely.',
   defaultAvatarFallback: 'S',
