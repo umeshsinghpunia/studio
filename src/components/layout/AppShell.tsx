@@ -63,7 +63,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false);
+  const [isProUser, setIsProUser] = useState(false); // Initialize to false
 
   const navItemsPrimary = useMemo(() => [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -75,14 +75,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   ], [isProUser]);
 
   const navItemsTools = useMemo(() => [
-    { href: '#', label: 'Insight', icon: BarChart3, disabled: !isProUser },
-    { href: '#', label: 'Analytics', icon: LineChart, disabled: !isProUser },
+    { href: '/insight', label: 'Insight', icon: BarChart3, disabled: !isProUser },
+    { href: '/analytics', label: 'Analytics', icon: LineChart, disabled: !isProUser },
   ], [isProUser]);
 
   const navItemsOther = useMemo(() => [
     { href: '/profile', label: 'Profile', icon: UserCircle, disabled: false },
-    { href: '#', label: 'Help Center', icon: HelpCircle, disabled: !isProUser },
-    { href: '#', label: 'Support', icon: LifeBuoy, disabled: !isProUser },
+    { href: '#', label: 'Help Center', icon: HelpCircle, disabled: !isProUser }, // Keeping '#' as it's not built
+    { href: '#', label: 'Support', icon: LifeBuoy, disabled: !isProUser }, // Keeping '#' as it's not built
   ], [isProUser]);
 
 
@@ -321,5 +321,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-
-    
