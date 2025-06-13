@@ -15,13 +15,13 @@ import {
   Receipt,
   Settings,
   DollarSign,
-  Briefcase, 
-  ShieldCheck, 
-  Target, 
-  BarChart3, 
-  LineChart, 
-  HelpCircle, 
-  LifeBuoy, 
+  Briefcase,
+  ShieldCheck,
+  Target,
+  BarChart3,
+  LineChart,
+  HelpCircle,
+  LifeBuoy,
   MoreHorizontal,
   Bell,
   Search
@@ -31,7 +31,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { auth } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle, // Imported SheetTitle
+  SheetTrigger
+} from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -58,12 +63,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false); 
+  const [isProUser, setIsProUser] = useState(false);
 
   const navItemsPrimary = useMemo(() => [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
     { href: '/transactions', label: 'All Expenses', icon: ListChecks, disabled: false },
-    { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false }, // Combined Bill and Subscription for now
+    { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false },
     { href: '/investment', label: 'Investment', icon: Briefcase, disabled: !isProUser },
     { href: '/cards', label: 'Cards', icon: ShieldCheck, disabled: !isProUser },
     { href: '/goals', label: 'Goals', icon: Target, disabled: !isProUser },
@@ -86,17 +91,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     }
   }, [user, loading, router]);
-  
+
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const dateString = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-      const timezone = now.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2] || 'IN'; 
+      const timezone = now.toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2] || 'IN';
       setCurrentTime(`${timeString} | ${dateString} | ${timezone}`);
     };
-    updateDateTime(); 
-    const timer = setInterval(updateDateTime, 1000); 
+    updateDateTime();
+    const timer = setInterval(updateDateTime, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -111,7 +116,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const handleSuccessfulUpgrade = () => {
     setIsProUser(true);
-    setIsPlanDialogOpen(false); 
+    setIsPlanDialogOpen(false);
     toast({ title: "Upgrade Successful!", description: "Pro features are now unlocked." });
   };
 
@@ -162,7 +167,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
     </div>
   );
-  
+
   return (
     <>
     <div className="grid min-h-screen w-full md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] bg-background">
@@ -180,8 +185,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <NavSection title="Other" items={navItemsOther} />
           </div>
           <div className="mt-auto p-4 border-t border-sidebar-border">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
               onClick={() => setIsPlanDialogOpen(true)}
               disabled={isProUser}
@@ -210,9 +215,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-sidebar-background text-sidebar-foreground border-sidebar-border p-0">
+               <SheetTitle className="sr-only">Main Navigation Menu</SheetTitle>
                <div className="flex h-16 items-center border-b border-sidebar-border px-4 lg:h-[68px] lg:px-6">
-                <Link 
-                    href="/dashboard" 
+                <Link
+                    href="/dashboard"
                     className="flex items-center gap-2.5 font-semibold text-sidebar-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                 >
@@ -226,12 +232,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <NavSection title="Other" items={navItemsOther} isMobile={true}/>
               </div>
               <div className="mt-auto p-4 border-t border-sidebar-border">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
                   onClick={() => {
-                    setMobileMenuOpen(false); 
-                    setIsPlanDialogOpen(true); 
+                    setMobileMenuOpen(false);
+                    setIsPlanDialogOpen(true);
                   }}
                   disabled={isProUser}
                 >
@@ -307,11 +313,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
     </div>
-    <PlanSelectionDialog 
-        open={isPlanDialogOpen} 
-        onOpenChange={setIsPlanDialogOpen} 
+    <PlanSelectionDialog
+        open={isPlanDialogOpen}
+        onOpenChange={setIsPlanDialogOpen}
         onSuccessfulUpgrade={handleSuccessfulUpgrade}
     />
     </>
   );
 }
+
+    
