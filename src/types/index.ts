@@ -78,10 +78,9 @@ export interface Subscription {
 
 export type InvestmentType = 'stocks' | 'crypto' | 'real_estate' | 'mutual_funds' | 'etf' | 'bonds' | 'other';
 
-// Using strings for icon names that are valid LucideIcon names
 export const investmentTypeOptions: { value: InvestmentType; label: string; icon: string }[] = [
   { value: 'stocks', label: 'Stocks', icon: 'TrendingUp' },
-  { value: 'crypto', label: 'Cryptocurrency', icon: 'Activity' }, // Bitcoin icon not in lucide, using Activity
+  { value: 'crypto', label: 'Cryptocurrency', icon: 'Activity' },
   { value: 'real_estate', label: 'Real Estate', icon: 'Home' },
   { value: 'mutual_funds', label: 'Mutual Funds', icon: 'Landmark' },
   { value: 'etf', label: 'ETF', icon: 'BarChartBig' },
@@ -93,14 +92,62 @@ export interface Investment {
   id: string;
   userId: string;
   name: string;
-  type: InvestmentType; // This should be the value from investmentTypeOptions
-  typeName: string; // This will store the label e.g. "Stocks"
-  typeIcon: string; // This will store the icon name e.g. "TrendingUp"
+  type: InvestmentType;
+  typeName: string;
+  typeIcon: string;
   amountInvested: number;
   investmentDate: string; // ISO string
   quantity?: number;
-  currentValue?: number; // For tracking later
+  currentValue?: number;
   notes?: string;
+  createdAt: string; // ISO string
+  updatedAt?: string; // ISO string
+}
+
+// Financial Cards
+export type CardProvider = 'visa' | 'mastercard' | 'amex' | 'discover' | 'rupay' | 'other';
+export type CardType = 'credit' | 'debit';
+
+export const cardProviderOptions: { value: CardProvider; label: string }[] = [
+  { value: 'visa', label: 'Visa' },
+  { value: 'mastercard', label: 'Mastercard' },
+  { value: 'amex', label: 'American Express' },
+  { value: 'discover', label: 'Discover' },
+  { value: 'rupay', label: 'RuPay' },
+  { value: 'other', label: 'Other' },
+];
+
+export const cardTypeOptions: { value: CardType; label: string }[] = [
+  { value: 'credit', label: 'Credit Card' },
+  { value: 'debit', label: 'Debit Card' },
+];
+
+export interface FinancialCard {
+  id: string;
+  userId: string;
+  cardName: string;
+  cardHolderName: string;
+  lastFourDigits: string;
+  expiryMonth: string; // MM
+  expiryYear: string; // YYYY
+  provider: CardProvider;
+  cardType: CardType;
+  issuingBank?: string;
+  notes?: string;
+  createdAt: string; // ISO string
+  updatedAt?: string; // ISO string
+}
+
+// Financial Goals
+export interface FinancialGoal {
+  id: string;
+  userId: string;
+  goalName: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate?: string; // ISO string, optional
+  description?: string;
+  icon?: string; // Lucide icon name, optional
   createdAt: string; // ISO string
   updatedAt?: string; // ISO string
 }

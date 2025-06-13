@@ -58,15 +58,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false); // State for Pro status
+  const [isProUser, setIsProUser] = useState(false); 
 
   const navItemsPrimary = useMemo(() => [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
     { href: '/transactions', label: 'All Expenses', icon: ListChecks, disabled: false },
-    { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false },
+    { href: '/bills', label: 'Bill & Subscription', icon: Receipt, disabled: false }, // Combined Bill and Subscription for now
     { href: '/investment', label: 'Investment', icon: Briefcase, disabled: !isProUser },
-    { href: '#', label: 'Card', icon: ShieldCheck, disabled: !isProUser },
-    { href: '#', label: 'Goals', icon: Target, disabled: !isProUser },
+    { href: '/cards', label: 'Cards', icon: ShieldCheck, disabled: !isProUser },
+    { href: '/goals', label: 'Goals', icon: Target, disabled: !isProUser },
   ], [isProUser]);
 
   const navItemsTools = useMemo(() => [
@@ -111,7 +111,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const handleSuccessfulUpgrade = () => {
     setIsProUser(true);
-    setIsPlanDialogOpen(false); // Close the dialog
+    setIsPlanDialogOpen(false); 
     toast({ title: "Upgrade Successful!", description: "Pro features are now unlocked." });
   };
 
@@ -152,7 +152,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </Link>
   );
 
-  const NavSection = ({ title, items, isMobile }: { title: string, items: ReturnType<typeof useMemo<typeof navItemsPrimary[0][]>>, isMobile?: boolean }) => (
+  const NavSection = ({ title, items, isMobile }: { title: string, items: ReturnType<typeof useMemo<(typeof navItemsPrimary[0])[]>>, isMobile?: boolean }) => (
     <div className="px-2 lg:px-4">
       <h3 className="mb-2 px-3 text-xs font-semibold uppercase text-sidebar-foreground/60 tracking-wider">{title}</h3>
       <nav className="grid items-start gap-0.5">
@@ -162,7 +162,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
     </div>
   );
-
+  
   return (
     <>
     <div className="grid min-h-screen w-full md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] bg-background">
@@ -184,7 +184,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               variant="outline" 
               className="w-full bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
               onClick={() => setIsPlanDialogOpen(true)}
-              disabled={isProUser} // Optionally disable if already Pro
+              disabled={isProUser}
             >
                 {isProUser ? "Pro Plan Active" : "Upgrade to PRO"}
             </Button>
@@ -315,5 +315,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-
-    
