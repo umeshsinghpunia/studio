@@ -9,14 +9,11 @@ export default function InvestmentPage() {
     <div className="flex flex-1 flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-headline font-semibold md:text-3xl">Manage Investments</h1>
-        {/* Placeholder for Add Investment button - can be enabled when functionality is ready */}
-        {/* 
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/investment/add">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Investment
           </Link>
-        </Button> 
-        */}
+        </Button>
       </div>
       <Card>
         <CardHeader>
@@ -33,7 +30,7 @@ export default function InvestmentPage() {
               Investment tracking is coming soon!
             </p>
             <p className="text-sm text-muted-foreground max-w-md">
-              As a Pro user, you'll soon be able to link investment accounts, monitor performance, analyze your assets, and see detailed reports right here.
+              As a Pro user, you'll soon be able to link investment accounts, monitor performance, analyze your assets, and see detailed reports right here. Use the "Add Investment" button to start recording your investments.
             </p>
           </div>
         </CardContent>
