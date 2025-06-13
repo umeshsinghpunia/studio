@@ -151,3 +151,13 @@ export interface FinancialGoal {
   createdAt: string; // ISO string
   updatedAt?: string; // ISO string
 }
+
+// Support Chat
+export interface ChatMessageData {
+  id: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  timestamp: any; // Firestore ServerTimestamp or Date
+  avatarUrl?: string;
+}

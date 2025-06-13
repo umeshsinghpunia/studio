@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
-  SheetTitle, // Imported SheetTitle
+  SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -63,7 +63,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false); // Initialize to false
+  const [isProUser, setIsProUser] = useState(false);
 
   const navItemsPrimary = useMemo(() => [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -81,8 +81,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const navItemsOther = useMemo(() => [
     { href: '/profile', label: 'Profile', icon: UserCircle, disabled: false },
-    { href: '#', label: 'Help Center', icon: HelpCircle, disabled: !isProUser }, // Keeping '#' as it's not built
-    { href: '#', label: 'Support', icon: LifeBuoy, disabled: !isProUser }, // Keeping '#' as it's not built
+    { href: '/help-center', label: 'Help Center', icon: HelpCircle, disabled: !isProUser },
+    { href: '/support', label: 'Support', icon: LifeBuoy, disabled: !isProUser },
   ], [isProUser]);
 
 
@@ -142,7 +142,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const NavLink = ({ href, label, icon: Icon, isMobile, disabled}: typeof navItemsPrimary[0] & {isMobile?: boolean, disabled?: boolean}) => (
     <Link
       href={disabled ? '#' : href}
-      onClick={() => isMobile && !disabled && setMobileMenuOpen(false)}
+      onClick={() => {
+        if (disabled) {
+            setIsPlanDialogOpen(true); // Open upgrade dialog if feature is disabled
+            if (isMobile) setMobileMenuOpen(false);
+            return;
+        }
+        if (isMobile) setMobileMenuOpen(false);
+      }}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
         pathname === href && !disabled ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/80 hover:text-sidebar-primary hover:bg-sidebar-accent/70",
@@ -215,7 +222,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-sidebar-background text-sidebar-foreground border-sidebar-border p-0">
-               <SheetTitle className="sr-only">Main Navigation Menu</SheetTitle>
+               <SheetTitle className="sr-only">Main Navigation</SheetTitle> {/* Screen-reader only title */}
                <div className="flex h-16 items-center border-b border-sidebar-border px-4 lg:h-[68px] lg:px-6">
                 <Link
                     href="/dashboard"
