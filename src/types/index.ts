@@ -159,5 +159,18 @@ export interface ChatMessageData {
   senderName: string;
   text: string;
   timestamp: any; // Firestore ServerTimestamp or Date
-  avatarUrl?: string;
+  avatarUrl: string | null;
+}
+
+// Notifications
+export type NotificationType = 'info' | 'alert' | 'success' | 'payment' | 'update';
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: any; // Firestore Timestamp
+  read: boolean;
+  type: NotificationType;
+  link?: string; // Optional link for navigation
 }

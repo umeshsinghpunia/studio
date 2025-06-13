@@ -25,12 +25,14 @@ import {
   MoreHorizontal,
   Bell,
   Search,
-  Package, // Example icon for notifications
-  AlertCircle, // Example icon for notifications
+  Package,
+  AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import { auth } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, writeBatch, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,11 +52,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { appConfig } from '@/config/app';
 import { Input } from '@/components/ui/input';
 import PlanSelectionDialog from '@/components/pro/PlanSelectionDialog';
 import { useToast } from '@/hooks/use-toast';
+import type { NotificationItem, NotificationType } from '@/types';
+import { getLucideIcon } from '@/lib/icons';
 
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -65,7 +69,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false);
-  const [isProUser, setIsProUser] = useState(false);
+  const [isProUser, setIsProUser] = useState(false); // Simulates Pro status
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
+
 
   const navItemsPrimary = useMemo(() => [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, disabled: false },
@@ -107,6 +114,68 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch notifications in real-time
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      return;
+    }
+
+    const notificationsRef = collection(db, 'users', user.uid, 'notifications');
+    const q = query(notificationsRef, orderBy('timestamp', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const fetchedNotifications: NotificationItem[] = [];
+      snapshot.forEach((doc) => {
+        fetchedNotifications.push({ id: doc.id, ...doc.data() } as NotificationItem);
+      });
+      setNotifications(fetchedNotifications);
+    }, (error) => {
+      console.error("Error fetching notifications:", error);
+      toast({
+        title: "Error",
+        description: "Could not fetch notifications.",
+        variant: "destructive",
+      });
+    });
+
+    return () => unsubscribe();
+  }, [user, toast]);
+
+  const hasUnreadNotifications = useMemo(() => notifications.some(n => !n.read), [notifications]);
+
+  const markNotificationsAsRead = useCallback(async () => {
+    if (!user || notifications.length === 0) return;
+
+    const unreadNotifications = notifications.filter(n => !n.read);
+    if (unreadNotifications.length === 0) return;
+
+    const batch = writeBatch(db);
+    unreadNotifications.forEach(notification => {
+      const notificationRef = doc(db, 'users', user.uid, 'notifications', notification.id);
+      batch.update(notificationRef, { read: true });
+    });
+
+    try {
+      await batch.commit();
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      toast({
+        title: "Error",
+        description: "Could not update notification status.",
+        variant: "destructive",
+      });
+    }
+  }, [user, notifications, toast]);
+
+  const handleNotificationDropdownOpenChange = (open: boolean) => {
+    setIsNotificationDropdownOpen(open);
+    if (open && hasUnreadNotifications) {
+      markNotificationsAsRead();
+    }
+  };
+
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -136,17 +205,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const getInitials = (name: string | null | undefined): string => {
     if (name && name.trim() !== '') {
-      return name.trim()[0].toUpperCase();
+      const parts = name.trim().split(' ');
+      if (parts.length > 1) {
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+      }
+      return parts[0].substring(0, 2).toUpperCase();
     }
     return appConfig.defaultAvatarFallback;
   };
+  
 
   const NavLink = ({ href, label, icon: Icon, isMobile, disabled}: typeof navItemsPrimary[0] & {isMobile?: boolean, disabled?: boolean}) => (
     <Link
       href={disabled ? '#' : href}
       onClick={() => {
         if (disabled) {
-            setIsPlanDialogOpen(true); // Open upgrade dialog if feature is disabled
+            setIsPlanDialogOpen(true); 
             if (isMobile) setMobileMenuOpen(false);
             return;
         }
@@ -176,6 +250,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
     </div>
   );
+  
+  const getNotificationIcon = (type: NotificationType) => {
+    switch (type) {
+      case 'info': return Package;
+      case 'alert': return AlertCircle;
+      case 'success': return CheckCircle;
+      case 'payment': return Receipt;
+      case 'update': return Bell; // Or another relevant icon
+      default: return Bell;
+    }
+  };
 
   return (
     <>
@@ -224,7 +309,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col bg-sidebar-background text-sidebar-foreground border-sidebar-border p-0">
-               <SheetTitle className="sr-only">Main Navigation</SheetTitle> {/* Screen-reader only title */}
+               <SheetTitle className="sr-only">Main Navigation</SheetTitle>
                <div className="flex h-16 items-center border-b border-sidebar-border px-4 lg:h-[68px] lg:px-6">
                 <Link
                     href="/dashboard"
@@ -278,44 +363,65 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 className="pl-8 sm:w-[250px] md:w-[200px] lg:w-[300px] h-9 rounded-md !bg-background"
               />
             </div>
-            <DropdownMenu>
+            <DropdownMenu open={isNotificationDropdownOpen} onOpenChange={handleNotificationDropdownOpenChange}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full relative text-muted-foreground hover:text-primary">
                     <Bell className="h-5 w-5" />
-                    <span className="absolute top-1 right-1 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
-                    </span>
+                    {hasUnreadNotifications && (
+                        <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                        </span>
+                    )}
                     <span className="sr-only">Notifications</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-80 md:w-96 max-h-[400px] overflow-y-auto">
+                <DropdownMenuLabel className="flex justify-between items-center">
+                  Notifications
+                  {/* <Button variant="link" size="sm" className="p-0 h-auto text-xs">Mark all as read</Button> */}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-start gap-2">
-                  <Package className="text-blue-500 mt-1" />
-                  <div>
-                    <p className="font-medium">New Order Placed</p>
-                    <p className="text-xs text-muted-foreground">Your order #12345 has been successfully placed.</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-2">
-                  <AlertCircle className="text-yellow-500 mt-1" />
-                   <div>
-                    <p className="font-medium">Subscription Ending Soon</p>
-                    <p className="text-xs text-muted-foreground">Your Pro plan will expire in 3 days.</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-start gap-2">
-                  <Receipt className="text-green-500 mt-1" />
-                   <div>
-                    <p className="font-medium">Bill Paid: Electricity</p>
-                    <p className="text-xs text-muted-foreground">Your electricity bill of $75 has been paid.</p>
-                  </div>
-                </DropdownMenuItem>
+                {notifications.length === 0 ? (
+                   <DropdownMenuItem disabled className="text-center text-muted-foreground py-4">
+                    No new notifications.
+                  </DropdownMenuItem>
+                ) : (
+                  notifications.map((notification) => {
+                    const Icon = getNotificationIcon(notification.type);
+                    const itemContent = (
+                      <div className="flex items-start gap-3">
+                        <Icon className={cn("mt-1 h-5 w-5 shrink-0", 
+                          notification.type === 'alert' ? 'text-destructive' :
+                          notification.type === 'success' ? 'text-green-500' :
+                          'text-primary'
+                        )} />
+                        <div className="flex-1">
+                          <p className={cn("font-medium text-sm", !notification.read && "font-bold")}>{notification.title}</p>
+                          <p className="text-xs text-muted-foreground">{notification.message}</p>
+                          <p className="text-2xs text-muted-foreground/70 mt-0.5">
+                            {notification.timestamp instanceof Timestamp ? formatDate(notification.timestamp.toDate().toISOString(), { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : 'Just now'}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={notification.id}
+                        className={cn("data-[disabled]:opacity-100", !notification.read && "bg-primary/5 hover:bg-primary/10")}
+                        onClick={() => {
+                          if (notification.link) router.push(notification.link);
+                          // Optionally mark as read individually on click too
+                        }}
+                      >
+                        {itemContent}
+                      </DropdownMenuItem>
+                    );
+                  })
+                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="justify-center text-sm text-primary hover:!text-primary">
-                  View All Notifications
+                <DropdownMenuItem className="justify-center text-sm text-primary hover:!text-primary py-2">
+                  View All Notifications (Coming Soon)
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
